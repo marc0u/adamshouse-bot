@@ -8,8 +8,8 @@ import src.nettools as nt
 
 
 class tenda(nt.AuthSession):
-    _URL_BASE = 'http://localhost:8080'
-    # _URL_BASE = 'http://192.168.1.1'
+    # _URL_BASE = 'http://localhost:8080'
+    _URL_BASE = 'http://192.168.1.1'
     _URLS = {
         'login': _URL_BASE+'/login/Auth',
         'GetParentControl': _URL_BASE+'/goform/GetParentControlInfo?mac=',

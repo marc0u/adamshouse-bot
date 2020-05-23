@@ -77,7 +77,7 @@ def proxmox(tb_obj, chat, query):
 
 def netcontrol(up, down, tb_obj=None, chat=None):
     static = "\nGloria-TV\r10:08:c1:a4:cf:22\r50\r300\nGloria-Phone\rd0:13:fd:2f:d1:c7\r50\r300\nQuelo-Phone\r3c:fa:43:19:7b:0e\r50\r300\nQuelo-Tablet\r7c:46:85:50:2c:ab\r50\r300"
-    data = f"list=Isi%20tv\r10:c7:53:34:9d:06\r{up}\r{down}\nIsi-iPad\r3c:15:c2:15:03:aa\r{up}\r{down}\nIsi's%20Phone\r74:c1:4f:7b:93:f6\r{up}\r{down}\nIsi-Laptop\rb4:82:fe:3f:75:6e\r{up}\r{down}\nIsi-Phone-New\r10:32:7e:87:ce:b7\r{up}\r{down}\nIsi-Unknown\r58:2f:40:7a:e9:3a\r{up}\r{down}\nLiving-TV\rd8:e0:e1:3e:54:1c\r{up}\r{down}" + static
+    data = f"list=Isi%20tv\r10:c7:53:34:9d:06\r{up}\r{down}\nI-iPad\r3c:15:c2:15:03:aa\r{up}\r{down}\nIsi's%20Phone\r74:c1:4f:7b:93:f6\r{up}\r{down}\nI-Laptop\rb4:82:fe:3f:75:6e\r{up}\r{down}\nI-Phone-New\r10:32:7e:87:ce:b7\r{up}\r{down}\nI-Unknown\r58:2f:40:7a:e9:3a\r{up}\r{down}\nLiving-TV\rd8:e0:e1:3e:54:1c\r{up}\r{down}\nI-Laptop-Hp\r4c:eb:bd:69:dd:d5\r{up}\r{down}" + static
     if tenda.set_net_control(data):
         if tb_obj:
             return tb_obj.send_message(f'Net Control setted in upload: {up}k/s and download: {down}k/s.', chat)
