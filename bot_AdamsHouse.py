@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from time import sleep
 import os.path
 
@@ -32,46 +33,46 @@ tg_users = {
 ## Schedule
 ## Monday
 src.schedule.every().monday.at("07:00").do(act.netcontrol, 50, 300)
-src.schedule.every().monday.at("21:00").do(act.netcontrol, 10, 150)
-src.schedule.every().monday.at("22:00").do(act.netcontrol, 10, 100)
-src.schedule.every().monday.at("23:00").do(act.netcontrol, 5, 50)
-src.schedule.every().monday.at("00:00").do(act.netcontrol, 5, 25)
+src.schedule.every().monday.at("21:00").do(act.netcontrol, 50, 150)
+src.schedule.every().monday.at("22:00").do(act.netcontrol, 50, 100)
+src.schedule.every().monday.at("23:00").do(act.netcontrol, 50, 50)
+src.schedule.every().monday.at("00:00").do(act.netcontrol, 50, 25)
 ## Tuesday
 src.schedule.every().tuesday.at("07:00").do(act.netcontrol, 50, 300)
-src.schedule.every().tuesday.at("21:00").do(act.netcontrol, 10, 150)
-src.schedule.every().tuesday.at("22:00").do(act.netcontrol, 10, 100)
-src.schedule.every().tuesday.at("23:00").do(act.netcontrol, 5, 50)
-src.schedule.every().tuesday.at("00:00").do(act.netcontrol, 5, 25)
+src.schedule.every().tuesday.at("21:00").do(act.netcontrol, 50, 150)
+src.schedule.every().tuesday.at("22:00").do(act.netcontrol, 50, 100)
+src.schedule.every().tuesday.at("23:00").do(act.netcontrol, 50, 50)
+src.schedule.every().tuesday.at("00:00").do(act.netcontrol, 50, 25)
 ## Wednesday
 src.schedule.every().wednesday.at("07:00").do(act.netcontrol, 50, 300)
-src.schedule.every().wednesday.at("21:00").do(act.netcontrol, 10, 150)
-src.schedule.every().wednesday.at("22:00").do(act.netcontrol, 10, 100)
-src.schedule.every().wednesday.at("23:00").do(act.netcontrol, 5, 50)
-src.schedule.every().wednesday.at("00:00").do(act.netcontrol, 5, 25)
+src.schedule.every().wednesday.at("21:00").do(act.netcontrol, 50, 150)
+src.schedule.every().wednesday.at("22:00").do(act.netcontrol, 50, 100)
+src.schedule.every().wednesday.at("23:00").do(act.netcontrol, 50, 50)
+src.schedule.every().wednesday.at("00:00").do(act.netcontrol, 50, 25)
 ## Thursday
 src.schedule.every().thursday.at("07:00").do(act.netcontrol, 50, 300)
-src.schedule.every().thursday.at("21:00").do(act.netcontrol, 10, 150)
-src.schedule.every().thursday.at("22:00").do(act.netcontrol, 10, 100)
-src.schedule.every().thursday.at("23:00").do(act.netcontrol, 5, 50)
-src.schedule.every().thursday.at("00:00").do(act.netcontrol, 5, 25)
+src.schedule.every().thursday.at("21:00").do(act.netcontrol, 50, 150)
+src.schedule.every().thursday.at("22:00").do(act.netcontrol, 50, 100)
+src.schedule.every().thursday.at("23:00").do(act.netcontrol, 50, 50)
+src.schedule.every().thursday.at("00:00").do(act.netcontrol, 50, 25)
 ## Friday
 src.schedule.every().friday.at("07:00").do(act.netcontrol, 50, 300)
-src.schedule.every().friday.at("21:00").do(act.netcontrol, 10, 150)
-src.schedule.every().friday.at("23:00").do(act.netcontrol, 10, 100)
-src.schedule.every().friday.at("00:00").do(act.netcontrol, 5, 50)
-src.schedule.every().friday.at("00:45").do(act.netcontrol, 5, 25)
+src.schedule.every().friday.at("21:00").do(act.netcontrol, 50, 150)
+src.schedule.every().friday.at("23:00").do(act.netcontrol, 50, 100)
+src.schedule.every().friday.at("00:00").do(act.netcontrol, 50, 50)
+src.schedule.every().friday.at("00:45").do(act.netcontrol, 50, 25)
 ## Saturday
 src.schedule.every().saturday.at("07:00").do(act.netcontrol, 50, 300)
-src.schedule.every().saturday.at("21:00").do(act.netcontrol, 10, 150)
-src.schedule.every().saturday.at("23:00").do(act.netcontrol, 10, 100)
-src.schedule.every().saturday.at("00:00").do(act.netcontrol, 5, 50)
-src.schedule.every().saturday.at("00:45").do(act.netcontrol, 5, 25)
+src.schedule.every().saturday.at("21:00").do(act.netcontrol, 50, 150)
+src.schedule.every().saturday.at("23:00").do(act.netcontrol, 50, 100)
+src.schedule.every().saturday.at("00:00").do(act.netcontrol, 50, 50)
+src.schedule.every().saturday.at("00:45").do(act.netcontrol, 50, 25)
 ## Sunday
 src.schedule.every().sunday.at("07:00").do(act.netcontrol, 50, 300)
-src.schedule.every().sunday.at("21:00").do(act.netcontrol, 10, 150)
-src.schedule.every().sunday.at("22:00").do(act.netcontrol, 10, 100)
-src.schedule.every().sunday.at("23:00").do(act.netcontrol, 5, 50)
-src.schedule.every().sunday.at("00:00").do(act.netcontrol, 5, 25)
+src.schedule.every().sunday.at("21:00").do(act.netcontrol, 50, 150)
+src.schedule.every().sunday.at("22:00").do(act.netcontrol, 50, 100)
+src.schedule.every().sunday.at("23:00").do(act.netcontrol, 50, 50)
+src.schedule.every().sunday.at("00:00").do(act.netcontrol, 50, 25)
 
 def resp_handler(update_info):
     text, chat, user = update_info
@@ -126,7 +127,8 @@ def resp_handler(update_info):
         tb.send_message('Username wrong!', chat)
 
 ## Main
-logging.info('bot_AdamsHouse is running!')
+logging.info('AdamsHouse started!')
+tb.send_message('AdamHouse started at ' + datetime.now().strftime("%H:%M:%S"), tg_users['marco']['id'])
 while True:
     try:
         tb.bot_Handler(resp_handler)
