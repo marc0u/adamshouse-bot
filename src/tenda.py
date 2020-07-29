@@ -1,166 +1,180 @@
 import json
 import logging
+import hashlib
 import time
+import reqtry
 from threading import Timer
 
-import src.generaltools as gt
-import src.nettools as nt
+logger = logging.getLogger(__name__)
 
 
-class tenda(nt.AuthSession):
-    # _URL_BASE = 'http://localhost:8080'
-    _URL_BASE = 'http://192.168.1.1'
-    _URLS = {
-        'login': _URL_BASE+'/login/Auth',
-        'GetParentControl': _URL_BASE+'/goform/GetParentControlInfo?mac=',
-        'SetParentControl': _URL_BASE+'/goform/parentControlEn',
-        'GetVports': _URL_BASE+'/goform/GetVirtualServerCfg',
-        'SetVports': _URL_BASE+'/goform/SetVirtualServerCfg',
-        'SetNetControl': _URL_BASE+'/goform/SetNetControlList'
+class TendaAC15():
+    _AUTH_DATA = {'username': 'admin',
+                  'password': ''}
+
+    def __init__(self, url_base='http://192.168.1.1'):
+        self._AUTH_DATA["password"] = hashlib.md5(
+            str.encode(input("Pass: "))).hexdigest()
+        self._URL_BASE = url_base
+        self._URLS = {
+            'login': self._URL_BASE+'/login/Auth',
+            'GetParentControl': self._URL_BASE+'/goform/GetParentControlInfo?mac=',
+            'SetParentControl': self._URL_BASE+'/goform/parentControlEn',
+            'GetVports': self._URL_BASE+'/goform/GetVirtualServerCfg',
+            'SetVports': self._URL_BASE+'/goform/SetVirtualServerCfg',
+            'GetNetControl': self._URL_BASE+'/goform/GetNetControlList',
+            'SetNetControl': self._URL_BASE+'/goform/SetNetControlList',
+            'GetIpMacBind': self._URL_BASE+'/goform/GetIpMacBind',
+            'SetIpMacBind': self._URL_BASE+'/goform/SetIpMacBind'
         }
-    _AUTH_URL = _URLS['login']
-    _AUTH_DATA = {'username': 'admin','password': '597e53ec61d987a3e488f7d42c01d9c3'}
-    MACS_CAMS = {
-        'nvr':'00:12:17:a2:38:33',
-        'cam':'30:ff:f6:31:1f:9b'
-        }
-    MACS_SERVER = {
-        'webhost':'4a:4b:cc:7b:ce:aa',
-        'proxmox':'74:46:a0:cb:1c:12'
-        }
-    vports_list = ''
-    _timer_cams = None
 
-    def get_setting(self, url):
-        resp = self.get_json(url, allow_redirects=False, timeout=self._timeout)
-        if resp == None:
-            return None
-        return resp
+    def _get_cookies(self):
+        """
+        Get cookies to make requests.
+        """
+        tries = 3
+        while tries:
+            try:
+                cookies = reqtry.post(self._URLS['login'], data=self._AUTH_DATA,
+                                      allow_redirects=False, timeout=(5, 5), tries=3, delay=1,
+                                      backoff=1.5, jitter=(1, 1.5))
+                assert cookies.status_code == 302, f"Invalid http status code: {cookies.status_code}"
+                assert bool(cookies.cookies), "Cookies are empty."
+                self._cookies = cookies.cookies
+                return
+            except:
+                tries -= 1
+                if not tries:
+                    self._cookies = None
+                    raise
 
-    def set_setting(self, url, data) -> bool:
-        resp = self.post(url, data=data, allow_redirects=False, timeout=self._timeout)
-        if resp == None:
-            return False
-        if resp.status_code != 200:
-            err = 'Http status code is not "200". It is: ' + str(resp.status_code)
-            logging.error(err)
-            return False
-        if '0' not in str(resp):
-            logging.error('It could not set setting.')
-            return False
-        logging.info(f'Setting successfully set.')
-        return True
+    def _req_get(self, url: str):
+        """
+        Return a request object of a GET request.
+        """
+        self._get_cookies()
+        if not self._cookies:
+            return
+        r = reqtry.get(url, cookies=self._cookies, allow_redirects=False, timeout=(3, 3), tries=3, delay=1,
+                       backoff=1.5, jitter=(1, 1.5))
+        assert r.status_code == 200, f"Get request: Invalid http status code: {r.status_code}"
+        return r
 
-    def get_parent_control(self, mac:str) -> dict:
-        resp = self.get_setting(self._URLS['GetParentControl'] + mac)
-        if resp == None:
-            logging.error("It could not get parent control.")
-            return None
-        return resp
+    def _get_json(self, url: str) -> dict:
+        """
+        Return a dictionary from a JSON object of a GET request.
+        """
+        r = self._req_get(url)
+        return r.json() if r else None
 
-    def set_parent_control(self, mac:str, status:int) -> bool:
-        if not self.set_setting(self._URLS['SetParentControl'], data={'mac': mac, 'isControled': status}):
-            logging.error('It could not set parent control.')
-            return False
-        logging.info(f'Parent control was setted to "{status}" for mac:"{mac}".')
-        return True
+    def _req_post(self, url: str, data):
+        """
+        Return the POST request response in text format.
+        """
+        self._get_cookies()
+        if not self._cookies:
+            return
+        r = reqtry.post(url, cookies=self._cookies, data=data, allow_redirects=False, timeout=(3, 3), tries=3, delay=1,
+                        backoff=1.5, jitter=(1, 1.5))
+        assert r.status_code == 200, f"Post request: Invalid http status code: {r.status_code}"
+        assert '"errCode":0' in r.text, f'Post response with error from server. Response: {r.text}'
+        return r.text
 
-    def get_vports(self) -> bool:
-        resp = self.get_setting(self._URLS['GetVports'])
-        if not resp:
-            logging.error("It could not get Virtual Ports.")
-            return False
-        try:
-            vports_list = resp['virtualList']
-            vports_list_formated = []
-            sep1, sep2 = ',' , '~'
-            for vport in vports_list:
-                vports_list_formated.append(vport['ip'] + sep1 + vport['inPort'] + sep1 + vport['outPort'] + sep1 + vport['protocol'])
-            self.vports_list = sep2.join(vports_list_formated)
-            return True
-        except Exception:
-            logging.exception("Exception occurred")
-            self.vports_list = ''
-            return False
+    def get_parent_control(self, mac: str) -> dict:
+        """
+        Return a dictionary of a Client Parent Control configuration.
+        Args:
+            mac:str: Client MAC address ex: "aa:bb:cc:dd:ee:ff"
+        Returns:
+            dict: {'enable': 1, 'mac': 'aa:bb:cc:dd:ee:ff', 'url_enable': 0, 'urls': '',
+            'time': '09:00-01:30', 'day': '1,1,1,1,1,1,1', 'limit_type': 1}
+        """
+        return self._get_json(self._URLS['GetParentControl'] + mac)
 
-    def add_vport(self, ip, inPort, outPort, protocol='0') -> bool:
-        if not self.get_vports():
-            return False
-        sep1, sep2 = ',' , '~'
-        vport_to_add = sep2 + ip + sep1 + inPort + sep1 + outPort + sep1 + protocol
-        if vport_to_add in self.vports_list:
-            logging.info(f'Virtual Port already Added: IP:"{ip}" InPort:"{inPort}" OutPort:"{outPort}".')
-            return True
-        self.vports_list += vport_to_add
-        if not self.set_setting(self._URLS['SetVports'], data={'list':self.vports_list}):
-            self.vports_list = ''
-            logging.error("It could not add the Virtual Port requested.")
-            return False
-        logging.info(f'Virtual Port Added: IP:"{ip}" InPort:"{inPort}" OutPort:"{outPort}".')
-        return True
+    def set_parent_control(self, mac: str, status: int) -> str:
+        """
+        Set status of a Client Parent Control configuration.
+        Args:
+            mac:str: Client MAC address ex: "aa:bb:cc:dd:ee:ff"
+            status:int: Status of client Parent Control ex: 1 (enable) 0 (disable) 
+        Returns:
+            str: Request response '{"errCode":0}'
+        """
+        return self._req_post(self._URLS['SetParentControl'], data={'mac': mac, 'isControled': status})
 
-    def remove_vport(self, ip, inPort, outPort, protocol='0') -> bool:
-        if not self.get_vports():
-            return False
-        sep1, sep2 = ',' , '~'
-        vport_to_remove = sep2 + ip + sep1 + inPort + sep1 + outPort + sep1 + protocol
-        if not vport_to_remove in self.vports_list:
-            logging.error("Virtual Port is not in the actual Virtual Port List.")
-            return False
-        self.vports_list = self.vports_list.replace(vport_to_remove, '')
-        if not self.set_setting(self._URLS['SetVports'], data={'list':self.vports_list}):
-            self.vports_list = ''
-            logging.error("It could not remove the Virtual Port requested.")
-            return False
-        logging.info(f'Virtual Port Removed: IP:"{ip}" InPort:"{inPort}" OutPort:"{outPort}."')
-        return True
+    def get_vports(self) -> dict:
+        """
+        Return a dictionary of Virtual Server configuration.
+        Returns:
+            dict: {'lanIp': '192.168.1.1', 'lanMask': '255.255.255.0',
+                'virtualList': [{'ip': '192.168.1.100', 'inPort': '80', 'outPort': '80', 'protocol': '0'}, ...]}
+        """
+        return self._get_json(self._URLS['GetVports'])
 
-    def start_vport(self, ip, inPort, outPort, alive_min, protocol='0', close_fuc=None) -> bool:
-        def close():
-            if self.remove_vport(ip, inPort, outPort, protocol):
-                if close_fuc:
-                    close_fuc(True)
-            else:
-                if close_fuc:
-                    close_fuc(False)
-        if not self.add_vport(ip, inPort, outPort, protocol):
-            return False
-        alive_min = int(alive_min)*60
-        vport = Timer(alive_min, close)
-        vport.start()
-        return True
-    
-    def are_cams_alive(self) -> bool:
-        try:
-            if self._timer_cams.isAlive():
-                return True
-            else:
-                return False
-        except:
-            return False
-    
-    def start_cams(self, alive_min, close_msg=None) -> bool:
-        def cams_close(close_msg=None) -> None:
-            self.set_parent_control(self.MACS_CAMS['nvr'], 1)
-            self.set_parent_control(self.MACS_CAMS['cam'], 1)
-            if close_msg:
-                close_msg()
-        nvr = self.set_parent_control(self.MACS_CAMS['nvr'], 0)
-        cam = self.set_parent_control(self.MACS_CAMS['cam'], 0)
-        if not nvr and not cam:
-            return False
-        alive_min = int(alive_min*60)
-        try:
-            self._timer_cams.cancel()
-        except:
-            pass
-        self._timer_cams = Timer(alive_min, cams_close, args=[close_msg])
-        self._timer_cams.start()
-        return True
-    
-    def set_net_control(self, data_list) -> bool:
-        if not self.set_setting(self._URLS['SetNetControl'], data=data_list):
-            logging.error('It could not set net control.')
-            return False
-        logging.info('Net control was setted.')
-        return True
+    def set_vports(self, vports_dict: dict) -> str:
+        """
+        Set Virtual Server configuration from dictionary returned by get_vports() method.
+        Args:
+            vports_dict:list: List of Virtual Server settings.
+        Returns:
+            str: Request response '{"errCode":0}'
+        """
+        if not vports_dict:
+            return
+        vports_list = []
+        for host in vports_dict["virtualList"]:
+            vports_list.append(host["ip"] + "," + host["inPort"] +
+                               "," + host["outPort"] + "," + host["protocol"])
+        return self._req_post(self._URLS['SetVports'], data={
+            'list': '~'.join(vports_list)})
+
+    def get_net_control(self) -> list:
+        """
+        Return a list of Bandwidth configuration.
+        Returns:
+            list: [{'netControlEn': '1'}, {'upSpeed': '0', 'downSpeed': '0', 'devType': 'unknown',
+                'hostName': 'ClientName', 'ip': '192.168.1.100', 'mac': 'aa:bb:cc:dd:ee:ff', 'limitUp': '0',
+                'limitDown': '0', 'isControled': '0', 'offline': '0', 'isSet': '0'}, ...]
+        """
+        return self._get_json(self._URLS['GetNetControl'])
+
+    def set_net_control(self, net_control: list) -> str:
+        """
+        Set Bandwidth Control configuration from list returned by get_net_control() method.
+        Args:
+            net_control:list: List of Bandwidth settings.
+        Returns:
+            str: Request response '{"errCode":0}'
+        """
+        if not net_control:
+            return
+        net_control_list = ""
+        for host in net_control[1:]:
+            net_control_list += host["hostName"] + "\r" + host["mac"] + \
+                "\r" + host["limitUp"] + "\r" + host["limitDown"] + "\n"
+        return self._req_post(self._URLS['SetNetControl'], data={"list": net_control_list})
+
+    def get_ipmac_bind(self) -> dict:
+        """
+        Return a dictionary of DHCP Reservation conffiguration.
+        Returns:
+            dict: {'lanIp': '192.168.1.1', 'lanMask': '255.255.255.0', 'dhttpIP': '172.27.175.218', 'dhcpClientList': [], 
+                'bindList': [{'ipaddr': '192.168.1.100', 'macaddr': 'aa:bb:cc:dd:ee:ff', 'devname': 'ClientName', 'status': '1'}, ...]}
+        """
+        return self._get_json(self._URLS['GetIpMacBind'])
+
+    def set_ipmac_bind(self, ipmac_bind_dict: dict) -> str:
+        """
+        Set DHCP Reservation configuration from dictionary returned by get_ipmac_bind() method.
+        Args:
+            ipmac_bind_dict:dict: List of DHCP Reservation settings.
+        Returns:
+            str: Request response '{"errCode":0}'
+        """
+        if not ipmac_bind_dict:
+            return
+        ipmac_bind = ""
+        for host in ipmac_bind_dict["bindList"]:
+            ipmac_bind += host["devname"] + "\r" + \
+                host["macaddr"] + "\r" + host["ipaddr"] + "\n"
+        return self._req_post(self._URLS['SetIpMacBind'], data={"bindnum": str(len(ipmac_bind_dict["bindList"])), "list": ipmac_bind})
