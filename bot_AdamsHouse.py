@@ -15,7 +15,7 @@ tb = tgbot.tb('921941981:AAHzGw2Nx3BXD4hDoYsfWqZOAlcP2a6zxqI')
 filename = os.path.basename(__file__)
 # lt.log_start(filename)
 logging.basicConfig(format='%(asctime)s - %(levelname)s / %(module)s / %(funcName)s / %(message)s',
-                    datefmt='%H:%M:%S', level=logging.INFO)
+                    datefmt='%H:%M:%S', level=logging.E)
 
 tg_users = {
     'marco': {
