@@ -4,13 +4,20 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pylint = "*"
-autopep8 = "*"
 pytest = "*"
+twine = "*"
+autopep8 = "*"
+pylint = "*"
 
 [packages]
-reqtry = "==0.0.2"
-tendawifi = "==0.1.0"
+certifi = "==2020.4.5.1"
+chardet = "==3.0.4"
+idna = "==2.9"
+requests = "==2.24.0"
+urllib3 = "==1.25.9"
+reqtry = "<1.0"
+tendawifi = "<1.0"
+marcotools = "*"
 
 [requires]
 python_version = "3.8"
