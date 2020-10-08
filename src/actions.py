@@ -3,88 +3,108 @@ import re
 from tendawifi import TendaAC15
 from threading import Timer
 
-tenda = TendaAC15()
+tenda = TendaAC15(password="9467804")
 timer_cams = None
+timer_vport = None
 
 
-def filter_bindlist_by_devname(str_in_dev_name: str) -> list:
-    mac_list = tenda.get_ipmac_bind()
-
-    def iterator_func(x):
-        if str_in_dev_name.lower() in x["devname"].lower():
-            return True
-        return False
-    return list(filter(iterator_func, mac_list["bindList"]))
-
-
-# def are_cams_alive() -> bool:
-#     try:
-#         if timer_cams.isAlive():
-#             return True
-#         else:
-#             return False
-#     except:
-#         return False
+def are_cams_alive(tb_obj, chat):
+    global timer_cams
+    try:
+        if timer_cams.isAlive():
+            return tb_obj.send_message('Enable', chat)
+        else:
+            return tb_obj.send_message('Disable', chat)
+    except:
+        return tb_obj.send_message('Disable', chat)
 
 
-# def start_cams(alive_min, close_msg=None) -> bool:
-#     def cams_close(close_msg=None) -> None:
-#         tenda.set_parent_control(self.MACS_CAMS['nvr'], 1)
-#         tenda.set_parent_control(self.MACS_CAMS['cam'], 1)
-#         if close_msg:
-#             close_msg()
-#     nvr = tenda.set_parent_control(self.MACS_CAMS['nvr'], 0)
-#     cam = tenda.set_parent_control(self.MACS_CAMS['cam'], 0)
-#     if not nvr and not cam:
-#         return False
-#     alive_min = int(alive_min*60)
-#     try:
-#         timer_cams.cancel()
-#     except:
-#         pass
-#     timer_cams = Timer(alive_min, cams_close, args=[close_msg])
-#     timer_cams.start()
-#     return True
+def start_cams(tb_obj, chat, user_name, alive_min=10, admin_id=None) -> bool:
+    global timer_cams
+    macs = tenda.filter_bindlist_by_devname("c-")
+
+    def set_cams_control(status) -> str:
+        result = None
+        for mac in macs:
+            result = tenda.set_parent_control(mac['macaddr'], status)
+        return result
+
+    def cams_close():
+        set_cams_control(1)
+        return tb_obj.send_message('Time finished! Try sending "cams" for another 10 minutes.', chat)
+
+    if not set_cams_control(0):
+        return tb_obj.send_message('Something wrong... It could not start the cameras.', chat)
+    try:
+        timer_cams.cancel()
+    except:
+        pass
+    timer_cams = Timer(int(alive_min*60), cams_close)
+    timer_cams.start()
+    if admin_id:
+        tb_obj.send_message(f'{user_name} has connected.', admin_id)
+    return tb_obj.send_message(f'Cams are enable for {alive_min} minutes.', chat)
 
 
-# def camstart(tb_obj, chat, user_name, admin_id=None):
-#     alive_min = 10
+def add_vport(tb_obj, chat, ip, inPort, outPort):
+    vports = tenda.get_vports()
+    if not vports:
+        tb_obj.send_message(
+            'Something wrong... It could not get the vport list.', chat)
+        return
+    vports["virtualList"].append(
+        {'ip': "192.168.1."+ip, 'inPort': inPort, 'outPort': outPort, 'protocol': '0'})
+    set_vport = tenda.set_vports(vports)
+    if not set_vport:
+        tb_obj.send_message(
+            'Something wrong... It could not set the vport list.', chat)
+        return
+    tb_obj.send_message(
+        'Vport added successfully.', chat)
+    return set_vport
 
-#     def close_msg():
-#         return tb_obj.send_message('Time finished! Try sending "cams" for another 10 minutes.', chat)
-#     if not start_cams(alive_min, close_msg):
-#         return tb_obj.send_message('Something wrong... It could not start the cameras.', chat)
-#     if admin_id:
-#         tb_obj.send_message(f'{user_name} has connected.', admin_id)
-#     return tb_obj.send_message(f'Cams are enable for {alive_min} minutes.', chat)
+
+def remove_vport(tb_obj, chat, ip, inPort, outPort):
+    vports = tenda.get_vports()
+    if not vports:
+        tb_obj.send_message(
+            'Something wrong... It could not get the vport list.', chat)
+        return
+    vports["virtualList"].remove(
+        {'ip': "192.168.1."+ip, 'inPort': inPort, 'outPort': outPort, 'protocol': '0'})
+    set_vport = tenda.set_vports(vports)
+    if not set_vport:
+        tb_obj.send_message(
+            'Something wrong... It could not set the vport list.', chat)
+        return
+    tb_obj.send_message(
+        'Vport added successfully.', chat)
+    return set_vport
 
 
-# def camstatus(tb_obj, chat):
-#     if are_cams_alive():
-#         return tb_obj.send_message('Enable', chat)
-#     else:
-#         return tb_obj.send_message('Disable', chat)
+def startvport(tb_obj, chat, query, alive_min=10):
+    res = re.match(
+        r'(/startvport) (\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
+    if res == None:
+        return tb_obj.send_message('Format not recognized. Ex. "/startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999"', chat)
+    ip, inPort, outPort, alive_min = "192.168.1." + \
+        res[2], res[3], res[4], res[5]
 
+    global timer_vport
 
-# def startvport(tb_obj, chat, query):
-#     res = re.match(
-#         r'(/startvport) (192.168.1.\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
-#     if res == None:
-#         return tb_obj.send_message('Format not recognized. Ex. "/startvport ip inPort outPort aliveMin"', chat)
-#     try:
-#         ip, inPort, outPort, alive_min = res[2], res[3], res[4], res[5]
+    def vport_close():
+        remove_vport(tb_obj, chat, ip, inPort, outPort)
+        return tb_obj.send_message('Time finished! Vport is closed.', chat)
 
-#         def close_msg(status):
-#             if not status:
-#                 return tb_obj.send_message(f'Virtual Port could not be removed: \nIP:"{ip}" \nInPort:"{inPort}" \nOutPort:"{outPort}"', chat)
-#             return tb_obj.send_message(f'Virtual Port Removed: \nIP:"{ip}" \nInPort:"{inPort}" \nOutPort:"{outPort}"', chat)
-#         if not start_vport(ip, inPort, outPort, alive_min, close_fuc=close_msg):
-#             return tb_obj.send_message('Something wrong... It could not start the vport.', chat)
-#         # Successful return
-#         return tb_obj.send_message(f'Virtual Port Started for {alive_min} min: \nIP:"{ip}" \nInPort:"{inPort}" \nOutPort:"{outPort}"', chat)
-#     except Exception:
-#         logging.exception("Exception occurred")
-#         return tb_obj.send_message('Something wrong... It could not start the vport.', chat)
+    if not add_vport(tb_obj, chat, ip, inPort, outPort):
+        return tb_obj.send_message('Something wrong... It could not start the Vport.', chat)
+    try:
+        timer_vport.cancel()
+    except:
+        pass
+    timer_vport = Timer(int(alive_min*60), vport_close)
+    timer_vport.start()
+    return tb_obj.send_message(f'Vport is enable for {alive_min} minutes.', chat)
 
 
 # def netcontrol(up, down, tb_obj=None, chat=None):
