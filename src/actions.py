@@ -46,7 +46,12 @@ def start_cams(tb_obj, chat, user_name, alive_min=10, admin_id=None) -> bool:
     return tb_obj.send_message(f'Cams are enable for {alive_min} minutes.', chat)
 
 
-def add_vport(tb_obj, chat, ip, inPort, outPort):
+def add_vport(tb_obj, chat, query):
+    res = re.match(
+        r'(/addvport) (\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
+    if res == None:
+        return tb_obj.send_message('Format not recognized. Ex. "/addvport ip:1-254 inPort:0-65535 outPort:0-65535"', chat)
+    ip, inPort, outPort = res[2], res[3], res[4]
     vports = tenda.get_vports()
     if not vports:
         tb_obj.send_message(
@@ -64,45 +69,54 @@ def add_vport(tb_obj, chat, ip, inPort, outPort):
     return set_vport
 
 
-def remove_vport(tb_obj, chat, ip, inPort, outPort):
+def remove_vport(tb_obj, chat, query):
+    res = re.match(
+        r'(/removevport) (\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
+    if res == None:
+        return tb_obj.send_message('Format not recognized. Ex. "/removevport ip:1-254 inPort:0-65535 outPort:0-65535"', chat)
+    ip, inPort, outPort = res[2], res[3], res[4]
     vports = tenda.get_vports()
     if not vports:
         tb_obj.send_message(
             'Something wrong... It could not get the vport list.', chat)
         return
-    vports["virtualList"].remove(
-        {'ip': "192.168.1."+ip, 'inPort': inPort, 'outPort': outPort, 'protocol': '0'})
+    try:
+        vports["virtualList"].remove(
+            {'ip': "192.168.1."+ip, 'inPort': inPort, 'outPort': outPort, 'protocol': '0'})
+    except ValueError:
+        tb_obj.send_message(
+            'The vport is not in the list.', chat)
+        return
     set_vport = tenda.set_vports(vports)
     if not set_vport:
         tb_obj.send_message(
             'Something wrong... It could not set the vport list.', chat)
         return
     tb_obj.send_message(
-        'Vport added successfully.', chat)
+        'Vport removed successfully.', chat)
     return set_vport
 
 
-def startvport(tb_obj, chat, query, alive_min=10):
+def start_vport(tb_obj, chat, query):
     res = re.match(
         r'(/startvport) (\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
     if res == None:
         return tb_obj.send_message('Format not recognized. Ex. "/startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999"', chat)
-    ip, inPort, outPort, alive_min = "192.168.1." + \
-        res[2], res[3], res[4], res[5]
+    ip, inPort, outPort, alive_min = res[2], res[3], res[4], res[5]
 
     global timer_vport
 
     def vport_close():
-        remove_vport(tb_obj, chat, ip, inPort, outPort)
+        remove_vport(tb_obj, chat, f"/removevport {ip} {inPort} {outPort}")
         return tb_obj.send_message('Time finished! Vport is closed.', chat)
 
-    if not add_vport(tb_obj, chat, ip, inPort, outPort):
+    if not add_vport(tb_obj, chat, f"/addvport {ip} {inPort} {outPort}"):
         return tb_obj.send_message('Something wrong... It could not start the Vport.', chat)
     try:
         timer_vport.cancel()
     except:
         pass
-    timer_vport = Timer(int(alive_min*60), vport_close)
+    timer_vport = Timer(int(alive_min)*60, vport_close)
     timer_vport.start()
     return tb_obj.send_message(f'Vport is enable for {alive_min} minutes.', chat)
 
