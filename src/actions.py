@@ -2,6 +2,7 @@ import logging
 import re
 from tendawifi import TendaAC15
 from threading import Timer
+from marcotools import retools
 
 tenda = TendaAC15(password="9467804")
 timer_cams = None
@@ -48,7 +49,7 @@ def start_cams(tb_obj, chat, user_name, alive_min=10, admin_id=None) -> bool:
 
 def add_vport(tb_obj, chat, query):
     res = re.match(
-        r'(/addvport) (\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
+        r'(/addvport) (\b\d\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
     if res == None:
         return tb_obj.send_message('Format not recognized. Ex. "/addvport ip:1-254 inPort:0-65535 outPort:0-65535"', chat)
     ip, inPort, outPort = res[2], res[3], res[4]
@@ -71,7 +72,7 @@ def add_vport(tb_obj, chat, query):
 
 def remove_vport(tb_obj, chat, query):
     res = re.match(
-        r'(/removevport) (\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
+        r'(/removevport) (\b\d\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
     if res == None:
         return tb_obj.send_message('Format not recognized. Ex. "/removevport ip:1-254 inPort:0-65535 outPort:0-65535"', chat)
     ip, inPort, outPort = res[2], res[3], res[4]
@@ -99,7 +100,7 @@ def remove_vport(tb_obj, chat, query):
 
 def start_vport(tb_obj, chat, query):
     res = re.match(
-        r'(/startvport) (\d\d*\d*) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
+        r'(/startvport) (\b\d\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
     if res == None:
         return tb_obj.send_message('Format not recognized. Ex. "/startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999"', chat)
     ip, inPort, outPort, alive_min = res[2], res[3], res[4], res[5]
@@ -121,6 +122,33 @@ def start_vport(tb_obj, chat, query):
     return tb_obj.send_message(f'Vport is enable for {alive_min} minutes.', chat)
 
 
+def set_net_control(query, black_list, tb_obj=None, chat=None):
+    res = re.match(
+        r'(/net) (\b\d\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
+    if res == None:
+        return tb_obj.send_message('Format not recognized. Ex. "/net up_limit:1-9999 down_limit:0-9999"', chat) if chat else None
+    up, down = res[2], res[3]
+
+    net = tenda.get_net_control()
+    if not net:
+        return tb_obj.send_message('Something wrong... It could not get the net control list.', chat) if chat else None
+    net_controled = [net[0]]
+    for client in net[1:]:
+        for black in black_list:
+            if black.lower() in client["hostName"].lower():
+                client["limitUp"] = up
+                client["limitDown"] = down
+        ip = retools.all_after("192.168.1.", client["ip"])
+        ip = int(ip) if ip else 0
+        if ip > 99:
+            client["limitUp"] = up
+            client["limitDown"] = down
+        net_controled.append(client)
+    set_net = tenda.set_net_control(net_controled)
+    if not set_net:
+        return tb_obj.send_message('Something wrong... It could not set the net control list.', chat) if chat else None
+    return tb_obj.send_message('Net control setted successfully.', chat) if chat else None
+
 # def netcontrol(up, down, tb_obj=None, chat=None):
 #    static = "\nGloria-TV\r10:08:c1:a4:cf:22\r50\r300\nGloria-Phone\rd0:13:fd:2f:d1:c7\r50\r300\nQuelo-Phone\r3c:fa:43:19:7b:0e\r50\r300\nQuelo-Tablet\r7c:46:85:50:2c:ab\r50\r300"
 #    data = f"list=Isi%20tv\r10:c7:53:34:9d:06\r{up}\r{down}\nI-iPad\r3c:15:c2:15:03:aa\r{up}\r{down}\nIsi's%20Phone\r74:c1:4f:7b:93:f6\r{up}\r{down}\nI-Laptop\rb4:82:fe:3f:75:6e\r{up}\r{down}\nI-Phone-New\r10:32:7e:87:ce:b7\r{up}\r{down}\nI-Unknown\r58:2f:40:7a:e9:3a\r{up}\r{down}\nLiving-TV\rd8:e0:e1:3e:54:1c\r{up}\r{down}\nI-Laptop-Hp\r4c:eb:bd:69:dd:d5\r{up}\r{down}" + static
@@ -134,87 +162,3 @@ def start_vport(tb_obj, chat, query):
 #             return tb_obj.send_message('It could not set Net Control.', chat)
 #         else:
 #             return False
-
-# def start_torrent(tb_obj, chat, query):
-#     res = re.match(r'(/torrent) (\b\d\d?\d?\d?\b)', query)
-#     if res == None:
-#         return tb_obj.send_message('Format not recognized. Ex. "/torrent aliveMin"', chat)
-#     try:
-#         ip, inPort, outPort, alive_min = '192.168.1.15', '9091', '999', res[2]
-
-#         def close_msg(status):
-#             if not status:
-#                 return tb_obj.send_message('Something wrong... "torrent" could not be stopped!', chat)
-#             return tb_obj.send_message('"torrens" Stopped.', chat)
-#         if not tenda.start_vport(ip, inPort, outPort, alive_min, close_fuc=close_msg):
-#             return tb_obj.send_message('Something wrong... It could not start "torrent".', chat)
-#         # Successful return
-#         return tb_obj.send_message('"torrens" Started.', chat)
-#     except Exception:
-#         logging.exception("Exception occurred")
-#         return tb_obj.send_message('Something wrong... It could not start "torrent".', chat)
-
-
-# def proxmox(tb_obj, chat, query):
-#     res = re.match(r'(/proxmox) (\b\d\d?\d?\d?\b)', query)
-#     if res == None:
-#         return tb_obj.send_message('Format not recognized. Ex. "/proxmox aliveMin"', chat)
-#     try:
-#         ip, inPort, outPort, alive_min = '192.168.1.10', '8006', '888', res[2]
-
-#         def close_msg(status):
-#             if not status:
-#                 return tb_obj.send_message('Something wrong... "proxmox" could not be stopped!', chat)
-#             return tb_obj.send_message('"proxmox" Stopped.', chat)
-#         if not tenda.start_vport(ip, inPort, outPort, alive_min, close_fuc=close_msg):
-#             return tb_obj.send_message('Something wrong... It could not start "proxmox".', chat)
-#         # Successful return
-#         return tb_obj.send_message('"proxmox" Started.', chat)
-#     except Exception:
-#         logging.exception("Exception occurred")
-#         return tb_obj.send_message('Something wrong... It could not start "proxmox".', chat)
-
-
-# def add_vport(self, ip: str, inPort: int, outPort: int, protocol='0') -> str:
-#     vports_list = self.parse_vports_list(self.get_vports())
-#     if not vports_list:
-#         logger.warn("vport_list variable is empty.")
-#         return
-#     sep1, sep2 = ',', '~'
-#     vport_to_add = sep2 + ip + sep1 + \
-#         str(inPort) + sep1 + str(outPort) + sep1 + protocol
-#     if vport_to_add in vports_list:
-#         logger.debug(
-#             f'Virtual Port already in the list: IP:{ip} InPort:{inPort} OutPort:{outPort}')
-#         return f'Virtual Port already in the list: IP:{ip} InPort:{inPort} OutPort:{outPort}'
-#     vports_list += vport_to_add
-#     return self.set_vports(vports_list)
-
-# def remove_vport(self, ip: str, inPort: int, outPort: int, protocol='0') -> str:
-#     vports_list = self.parse_vports_list(self.get_vports())
-#     if not vports_list:
-#         logger.warn("vport_list variable is empty.")
-#         return
-#     sep1, sep2 = ',', '~'
-#     vport_to_remove = sep2 + ip + sep1 + \
-#         str(inPort) + sep1 + str(outPort) + sep1 + protocol
-#     if not vport_to_remove in vports_list:
-#         logger.debug(
-#             f'Virtual Port is not in the current list: IP:{ip} InPort:{inPort} OutPort:{outPort}')
-#         return f'Virtual Port already in the list: IP:{ip} InPort:{inPort} OutPort:{outPort}'
-#     vports_list = vports_list.replace(vport_to_remove, '')
-#     return self.set_vports(vports_list)
-
-# def open_vport_timer(self, ip: str, inPort: int, outPort: int, alive_min: int, protocol='0', close_func=None) -> bool:
-#     def close():
-#         if self.remove_vport(ip, inPort, outPort, protocol):
-#             if close_func:
-#                 close_func(True)
-#         else:
-#             if close_func:
-#                 close_func(False)
-#     if not self.add_vport(ip, inPort, outPort, protocol):
-#         return False
-#     vport = Timer(alive_min*60, close)
-#     vport.start()
-#     return True
