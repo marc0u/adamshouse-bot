@@ -4,50 +4,52 @@ from marcotools import telegrambot
 from marcotools import filestools
 import src.actions as act
 
-HELP_MSG = """/camstart : Start all cameras.
+HELP_MSG = """/startcams alive_min:0-9999
 /camstatus : Get status for each cameras.
-/startvport : Start a vport for a while. Ex. /startvport IP InPort OutPort AliveMin
-/torrent : Start torrent for a while. Ex. /torrent AliveMin
-/proxmox : Start proxmox for a while. Ex. /proxmox AliveMin
-/net0 : Set net control normal mode
-/net1 : Set net control moderate mode
-/net2 : Set net control restrictive mode
-/net3 : Set net control very restrict mode"""
+/startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999
+/net up_limit:1-9999 down_limit:0-9999
+/addvport ip:1-254 inPort:0-65535 outPort:0-65535
+/removevport ip:1-254 inPort:0-65535 outPort:0-65535
+/ofuscate someone how_many:1-9999" interval_sec:1-9999
+/reboot : Reboot router
+"""
 
 tb = telegrambot.tb('921941981:AAHzGw2Nx3BXD4hDoYsfWqZOAlcP2a6zxqI')
 tg_users = filestools.load_json_file("./src/users.json")
+settings = filestools.load_json_file("./src/settings.json")
 
 
 def resp_handler(update_info):
     text, chat, user = update_info
+    text = text.lower()
 
     def admin(user_name):
-        if text.lower() == '/help':
+        if text.startswith('/help'):
             tb.send_message(HELP_MSG, chat)
-        elif text.lower() == '/camstart':
-            act.camstart(tb, chat, user_name)
-        elif text.lower() == '/camstatus':
-            act.camstatus(tb, chat)
-        elif '/startvport' in text.lower():
-            act.startvport(tb, chat, text.lower())
-        elif '/torrent' in text.lower():
-            act.start_torrent(tb, chat, text.lower())
-        elif '/proxmox' in text.lower():
-            act.proxmox(tb, chat, text.lower())
-        elif text.lower() == '/net0':
-            act.netcontrol(50, 300, tb, chat)
-        elif text.lower() == '/net1':
-            act.netcontrol(20, 150, tb, chat)
-        elif text.lower() == '/net2':
-            act.netcontrol(10, 50, tb, chat)
-        elif text.lower() == '/net3':
-            act.netcontrol(5, 25, tb, chat)
+        elif text.startswith('/startcams'):
+            act.start_cams(tb, chat, user_name, text)
+        elif text.startswith('/camstatus'):
+            act.are_cams_alive(tb, chat)
+        elif text.startswith('/startvport'):
+            act.start_vport(tb, chat, text)
+        elif text.startswith('/net'):
+            act.set_net_control(text, settings["blacklist"], tb, chat)
+        elif text.startswith('/addvport'):
+            act.add_vport(tb, chat, text)
+        elif text.startswith('/removevport'):
+            act.remove_vport(tb, chat, text)
+        elif text.startswith('/ofuscate'):
+            act.ofuscate(text, tb, chat)
+        elif text.startswith('/reboot'):
+            act.tenda.reboot()
+            tb.send_message("Router rebooted", chat)
         else:
             tb.send_message('Wrong command!', chat)
 
     def users(user_name):
-        if text.lower() == 'cams':
-            act.camstart(tb, chat, user_name, tg_users['marco']['id'])
+        if text == 'cams':
+            act.start_cams(tb, chat, user_name, "/startcams 10",
+                           tg_users['marco']['id'])
         else:
             tb.send_message(
                 f'Envía la palabra "Cams" para habilitar las camaras"', chat)

@@ -3,6 +3,7 @@ import re
 from tendawifi import TendaAC15
 from threading import Timer
 from marcotools import retools
+from time import sleep
 
 tenda = TendaAC15(password="9467804")
 timer_cams = None
@@ -20,7 +21,12 @@ def are_cams_alive(tb_obj, chat):
         return tb_obj.send_message('Disable', chat)
 
 
-def start_cams(tb_obj, chat, user_name, alive_min=10, admin_id=None) -> bool:
+def start_cams(tb_obj, chat, user_name, query, admin_id=None):
+    res = re.match(
+        r'(/startcams) (\b\d\d?\d?\d?\b)', query)
+    if res == None:
+        return tb_obj.send_message('Format not recognized. Ex. "/startcams alive_min:0-9999"', chat)
+    alive_min = res[2]
     global timer_cams
     macs = tenda.filter_bindlist_by_devname("c-")
 
@@ -40,7 +46,7 @@ def start_cams(tb_obj, chat, user_name, alive_min=10, admin_id=None) -> bool:
         timer_cams.cancel()
     except:
         pass
-    timer_cams = Timer(int(alive_min*60), cams_close)
+    timer_cams = Timer(int(alive_min)*60, cams_close)
     timer_cams.start()
     if admin_id:
         tb_obj.send_message(f'{user_name} has connected.', admin_id)
@@ -149,16 +155,18 @@ def set_net_control(query, black_list, tb_obj=None, chat=None):
         return tb_obj.send_message('Something wrong... It could not set the net control list.', chat) if chat else None
     return tb_obj.send_message('Net control setted successfully.', chat) if chat else None
 
-# def netcontrol(up, down, tb_obj=None, chat=None):
-#    static = "\nGloria-TV\r10:08:c1:a4:cf:22\r50\r300\nGloria-Phone\rd0:13:fd:2f:d1:c7\r50\r300\nQuelo-Phone\r3c:fa:43:19:7b:0e\r50\r300\nQuelo-Tablet\r7c:46:85:50:2c:ab\r50\r300"
-#    data = f"list=Isi%20tv\r10:c7:53:34:9d:06\r{up}\r{down}\nI-iPad\r3c:15:c2:15:03:aa\r{up}\r{down}\nIsi's%20Phone\r74:c1:4f:7b:93:f6\r{up}\r{down}\nI-Laptop\rb4:82:fe:3f:75:6e\r{up}\r{down}\nI-Phone-New\r10:32:7e:87:ce:b7\r{up}\r{down}\nI-Unknown\r58:2f:40:7a:e9:3a\r{up}\r{down}\nLiving-TV\rd8:e0:e1:3e:54:1c\r{up}\r{down}\nI-Laptop-Hp\r4c:eb:bd:69:dd:d5\r{up}\r{down}" + static
-#    if tenda.set_net_control(data):
-#         if tb_obj:
-#             return tb_obj.send_message(f'Net Control setted in upload: {up}k/s and download: {down}k/s.', chat)
-#         else:
-#             return True
-#     else:
-#         if tb_obj:
-#             return tb_obj.send_message('It could not set Net Control.', chat)
-#         else:
-#             return False
+
+def ofuscate(query, tb_obj=None, chat=None):
+    res = re.match(
+        r'(/ofuscate) (.*) (\b\d\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
+    if res == None:
+        return tb_obj.send_message('Format not recognized. Ex. "/ofuscate someone how_many:1-9999" interval_sec:1-9999', chat) if chat else None
+    targets = tenda.filter_onlinelist_by_devname(res[2])
+    how_many, interval_sec = int(res[3]), int(res[4])
+    for _ in range(how_many):
+        for target in targets:
+            tenda.set_parent_control(target["deviceId"], 1)
+        sleep(interval_sec)
+        for target in targets:
+            tenda.set_parent_control(target["deviceId"], 0)
+        sleep(interval_sec)
