@@ -14,13 +14,15 @@ def NetControl():
     while True:
         try:
             now = datetime.now().time()
-            if time(7) <= now <= time(20, 59):
+            if time(7) <= now <= time(16, 59):
+                act.set_net_control("/net 100 600", ["isi", "i-"])
+            if time(17) <= now <= time(20, 59):
                 act.set_net_control("/net 50 400", ["isi", "i-"])
-            elif time(21) <= now <= time(23, 30):
+            elif time(21) <= now <= time(23, 59):
                 act.set_net_control("/net 20 100", ["isi", "i-"])
-            elif time(23, 31) <= now <= time(6, 59):
-                act.set_net_control("/net 20 50", ["isi", "i-"])
-                act.ofuscate("/ofuscate isi 10 5")
+            while time(0) <= now <= time(6, 59):
+                act.ofuscate("/ofuscate isi 10 10")
+                sleep(uniform(5.0, 20.0))
             sleep(15*60)
         except (AssertionError, req_exceptions.ConnectTimeout, req_exceptions.ConnectionError, req_exceptions.HTTPError, req_exceptions.ReadTimeout, req_exceptions.Timeout) as e:
             logging.warning(e)
