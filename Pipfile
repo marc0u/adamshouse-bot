@@ -18,6 +18,7 @@ urllib3 = "==1.25.9"
 reqtry = "<1.0"
 tendawifi = "<1.0"
 marcotools = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.8"
