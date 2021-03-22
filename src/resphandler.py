@@ -1,5 +1,6 @@
 
 import logging
+from os import getenv
 from marcotools import telegrambot
 from marcotools import filestools
 import src.actions as act
@@ -14,7 +15,7 @@ HELP_MSG = """/startcams alive_min:0-9999
 /reboot : Reboot router
 """
 
-tb = telegrambot.tb('921941981:AAHzGw2Nx3BXD4hDoYsfWqZOAlcP2a6zxqI')
+tb = telegrambot.tb(getenv("TB_TOKEN"))
 tg_users = filestools.load_json_file("./src/users.json")
 settings = filestools.load_json_file("./src/settings.json")
 

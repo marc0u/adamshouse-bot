@@ -9,6 +9,7 @@ import src.actions as act
 
 # settings = filestools.load_json_file("./src/settings.json")
 
+logger = logging.getLogger("adamshouse.netloop")
 
 def NetControl():
     while True:
@@ -25,8 +26,8 @@ def NetControl():
                 sleep(uniform(5.0, 20.0))
             sleep(15*60)
         except (AssertionError, req_exceptions.ConnectTimeout, req_exceptions.ConnectionError, req_exceptions.HTTPError, req_exceptions.ReadTimeout, req_exceptions.Timeout) as e:
-            logging.warning(e)
+            logger.warning(e, exc_info=True)
             sleep(uniform(1.0, 2.0))
         except Exception:
-            logging.exception("Exception occurred")
+            logger.exception("Exception occurred")
             sleep(uniform(1.0, 2.0))
