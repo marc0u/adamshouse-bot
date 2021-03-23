@@ -3,3 +3,4 @@ Icon*
 .vscode
 __pycache__
 /old
+.env

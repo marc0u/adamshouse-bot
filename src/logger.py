@@ -26,9 +26,9 @@ def init_logger(name, debug=""):
     logger.setLevel(logging.DEBUG)
     # Logging Formatter
     formatter = logging.Formatter(
-        '%(asctime)s - %(module)s - %(funcName)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        '%(asctime)s - %(name)s - %(funcName)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     formatter_short = logging.Formatter(
-        '%(module)s - %(funcName)s - %(levelname)s: %(message)s')
+        '%(name)s - %(funcName)s - %(levelname)s: %(message)s')
     # Console Handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.CRITICAL if debug !=
