@@ -16,7 +16,7 @@ else:
 
 
 assert_envs()
-logger = init_logger("adamshouse",getenv("DEBUG"))
+logger = init_logger("adamshousebot", getenv("DEBUG"))
 
 if __name__ == "__main__":
     Thread(target=Bot).start()

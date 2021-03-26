@@ -22,8 +22,11 @@ def NetControl():
                 act.set_net_control("/net 100 600", ["isi", "i-"])
             elif time(17) <= now <= time(20, 59):
                 act.set_net_control("/net 50 400", ["isi", "i-"])
-            elif time(21) <= now <= time(23, 59):
+            elif time(21) <= now <= time(22, 29):
                 act.set_net_control("/net 50 200", ["isi", "i-"])
+            elif time(22, 30) <= now <= time(23, 59):
+                act.set_net_control("/net 50 150", ["isi", "i-"])
+                act.ofuscate("/ofuscate isi 10 10")
             elif time(0) <= now <= time(6, 59):
                 act.set_net_control("/net 20 100", ["isi", "i-"])
                 act.ofuscate("/ofuscate isi 10 10")
@@ -32,14 +35,14 @@ def NetControl():
             sleep(uniform(5.0, 15.0)*60)
         except (AssertionError, req_exceptions.ConnectTimeout, req_exceptions.ConnectionError, req_exceptions.HTTPError, req_exceptions.ReadTimeout, req_exceptions.Timeout) as e:
             warn_counter += 1
-            if warn_counter > 5:
+            if warn_counter > 3:
                 logger.exception("Exception occurred")
                 sleep(15*60)
             logger.warning(e, exc_info=True)
             sleep(3.0)
         except Exception:
             error_counter += 1
-            if error_counter > 3:
+            if error_counter > 1:
                 logger.exception("Exception occurred")
                 sleep(15*60)
             sleep(5.0)
