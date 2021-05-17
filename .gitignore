@@ -1,3 +1,4 @@
+*.log
 Icon*
 /4.*
 .vscode
