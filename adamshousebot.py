@@ -5,8 +5,6 @@ try:
 except:
     raise
 else:
-    import logging
-    import os
     from os import getenv
     from threading import Thread
     from src.botloop import Bot

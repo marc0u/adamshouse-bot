@@ -27,8 +27,11 @@ def NetControl():
             elif time(22, 30) <= now <= time(23, 59):
                 act.set_net_control("/net 50 150", ["isi", "i-"])
                 act.ofuscate("/ofuscate isi 10 10")
-            elif time(0) <= now <= time(6, 59):
+            elif time(0) <= now <= time(0, 59):
                 act.set_net_control("/net 20 100", ["isi", "i-"])
+                act.ofuscate("/ofuscate isi 10 10")
+            elif time(1) <= now <= time(6, 59):
+                act.set_net_control("/net 20 50", ["isi", "i-"])
                 act.ofuscate("/ofuscate isi 10 10")
             error_counter = 0
             warn_counter = 0

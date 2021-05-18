@@ -1,13 +1,19 @@
-import logging
+from datetime import datetime
 import re
 from tendawifi import TendaAC15
 from threading import Timer
 from marcotools import retools
 from time import sleep
+from os import getenv
 
-tenda = TendaAC15(password="9467804")
+tenda = TendaAC15(password=getenv("TENDA_PASS"))
 timer_cams = None
 timer_vport = None
+
+
+def get_time(tb_obj, chat):
+    now = datetime.now()
+    return tb_obj.send_message(now.strftime("%d/%m/%Y - %H:%M:%S"), chat)
 
 
 def are_cams_alive(tb_obj, chat):

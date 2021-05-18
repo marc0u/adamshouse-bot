@@ -5,7 +5,8 @@ from marcotools import telegrambot
 from marcotools import filestools
 import src.actions as act
 
-HELP_MSG = """/startcams alive_min:0-9999
+HELP_MSG = """/time : Get server time.
+/startcams alive_min:0-9999
 /camstatus : Get status for each cameras.
 /startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999
 /net up_limit:1-9999 down_limit:0-9999
@@ -24,45 +25,49 @@ def resp_handler(update_info):
     text, chat, user = update_info
     text = text.lower()
 
-    def admin(user_name):
-        if text.startswith('/help'):
-            tb.send_message(HELP_MSG, chat)
-        elif text.startswith('/startcams'):
-            act.start_cams(tb, chat, user_name, text)
-        elif text.startswith('/camstatus'):
-            act.are_cams_alive(tb, chat)
-        elif text.startswith('/startvport'):
-            act.start_vport(tb, chat, text)
-        elif text.startswith('/net'):
-            act.set_net_control(text, settings["blacklist"], tb, chat)
-        elif text.startswith('/addvport'):
-            act.add_vport(tb, chat, text)
-        elif text.startswith('/removevport'):
-            act.remove_vport(tb, chat, text)
-        elif text.startswith('/ofuscate'):
-            act.ofuscate(text, tb, chat)
-        elif text.startswith('/reboot'):
-            act.tenda.reboot()
-            tb.send_message("Router rebooted", chat)
-        else:
-            tb.send_message('Wrong command!', chat)
-
-    def users(user_name):
-        if text == 'cams':
-            act.start_cams(tb, chat, user_name, "/startcams 10",
-                           tg_users['marco']['id'])
-        else:
-            tb.send_message(
-                f'Envía la palabra "Cams" para habilitar las camaras"', chat)
-
     if user == tg_users['marco']['id']:
-        admin(tg_users['marco']['name'])
+        admin(tg_users['marco']['name'], text, chat)
     elif user == tg_users['aiara']['id']:
-        users(tg_users['aiara']['name'])
+        users(tg_users['aiara']['name'], text, chat)
     elif user == tg_users['quelo']['id']:
-        users(tg_users['quelo']['name'])
+        users(tg_users['quelo']['name'], text, chat)
     else:
         logging.warning('Someone strange is trying to connect with the bot.')
         tb.send_message(
             'WARNING: Someone strange is trying to connect with the bot.', tg_users['marco']['id'])
         tb.send_message('Username wrong!', chat)
+
+
+def admin(user_name, text, chat):
+    if text.startswith('/help'):
+        return tb.send_message(HELP_MSG, chat)
+    elif text.startswith('/startcams'):
+        return act.start_cams(tb, chat, user_name, text)
+    elif text.startswith('/camstatus'):
+        return act.are_cams_alive(tb, chat)
+    elif text.startswith('/startvport'):
+        return act.start_vport(tb, chat, text)
+    elif text.startswith('/net'):
+        return act.set_net_control(text, settings["blacklist"], tb, chat)
+    elif text.startswith('/addvport'):
+        return act.add_vport(tb, chat, text)
+    elif text.startswith('/removevport'):
+        return act.remove_vport(tb, chat, text)
+    elif text.startswith('/ofuscate'):
+        return act.ofuscate(text, tb, chat)
+    elif text.startswith('/reboot'):
+        act.tenda.reboot()
+        return tb.send_message("Router rebooted", chat)
+    elif text.startswith('/time'):
+        return act.get_time(tb, chat)
+    else:
+        return tb.send_message('Wrong command!', chat)
+
+
+def users(user_name, text, chat):
+    if text == 'cams':
+        act.start_cams(tb, chat, user_name, "/startcams 10",
+                       tg_users['marco']['id'])
+    else:
+        tb.send_message(
+            f'Envía la palabra "Cams" para habilitar las camaras"', chat)
