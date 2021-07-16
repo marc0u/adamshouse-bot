@@ -134,25 +134,48 @@ def start_vport(tb_obj, chat, query):
     return tb_obj.send_message(f'Vport is enable for {alive_min} minutes.', chat)
 
 
-def set_net_control(query, black_list, tb_obj=None, chat=None):
+def set_net_control(query, tb_obj=None, chat=None):
     res = re.match(
-        r'(/net) (\b\d\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
+        r'(/net) (\b\d\d?\d?\d?\b) (\b\d\d?\d?\d?\b)\s?([w|b]-[A-Za-z0-9,_-]+)?\s?(\b\d\d?\d?-\d\d?\d?\b)?', query)
     if res == None:
-        return tb_obj.send_message('Format not recognized. Ex. "/net up_limit:1-9999 down_limit:0-9999"', chat) if chat else None
-    up, down = res[2], res[3]
-
+        return tb_obj.send_message('Format not recognized. Ex. "/net up_limit:1-9999 down_limit:0-9999 (optional)white|black:w|b-aa,bb,cc ip_range:100-150"', chat) if chat else None
+    up, down, keywords, ip_range = res[2], res[3], res[4], res[5]
+    if ip_range:
+        ip_from, ip_to = ip_range.split("-")
+        ip_from, ip_to = int(ip_from), int(ip_to)
+        if ip_from > ip_to:
+            return tb_obj.send_message('The first number of ip_range must be lower than the second. Ex. "ip_range:100-150"', chat) if chat else None
     net = tenda.get_net_control()
     if not net:
         return tb_obj.send_message('Something wrong... It could not get the net control list.', chat) if chat else None
     net_controled = [net[0]]
     for client in net[1:]:
-        for black in black_list:
-            if black.lower() in client["hostName"].lower():
+        if keywords:
+            keyword_list = keywords[2:].split(",")
+            if keywords.startswith("b"):
+                for item in keyword_list:
+                    if item in client["hostName"]:
+                        print(client["hostName"])
+                        client["limitUp"] = up
+                        client["limitDown"] = down
+                        break
+            if keywords.startswith("w"):
+                is_white = False
+                for item in keyword_list:
+                    if item in client["hostName"]:
+                        is_white = True
+                if not is_white:
+                    print(client["hostName"])
+                    client["limitUp"] = up
+                    client["limitDown"] = down
+        if ip_range:
+            ip = retools.all_after("192.168.1.", client["ip"])
+            ip = int(ip) if ip else 0
+            if ip_from <= ip <= ip_to:
                 client["limitUp"] = up
                 client["limitDown"] = down
-        ip = retools.all_after("192.168.1.", client["ip"])
-        ip = int(ip) if ip else 0
-        if ip > 99:
+        if not (keywords or ip_range):
+            print(client["hostName"])
             client["limitUp"] = up
             client["limitDown"] = down
         net_controled.append(client)
