@@ -5,20 +5,23 @@ from time import sleep
 from os import getenv
 from requests import exceptions as req_exceptions
 import src.resphandler as rh
+from marcotools import telegrambot
 
 logger = logging.getLogger("adamshousebot.botloop")
+
+tb = telegrambot.tb(getenv("TB_TOKEN"))
 
 
 def Bot():
     started = datetime.now().strftime("%Y-%m-%d %H:%M:%S")+' AdamshouseBot started'
     print(started)
-    rh.tb.send_message(started,  getenv("LOGGER_TB_CHAT_ID"))
+    tb.send_message(started,  getenv("LOGGER_TB_CHAT_ID"))
     logger.debug("--------DEBUG MODE-------")
     error_counter = 0
     warn_counter = 0
     while True:
         try:
-            rh.tb.updates_handler(rh.resp_handler)
+            tb.updates_handler(rh.resp_handler)
             error_counter = 0
             warn_counter = 0
             sleep(3.0)

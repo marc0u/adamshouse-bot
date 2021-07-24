@@ -1,9 +1,11 @@
 
 import logging
+import telegram
 from os import getenv
 from marcotools import telegrambot
 from marcotools import filestools
 import src.actions as act
+
 
 HELP_MSG = """/time : Get server time.
 /startcams alive_min:0-9999
@@ -16,7 +18,8 @@ HELP_MSG = """/time : Get server time.
 /reboot : Reboot router
 """
 
-tb = telegrambot.tb(getenv("TB_TOKEN"))
+# tb = telegrambot.tb(getenv("TB_TOKEN"))
+tb = telegram.Bot(token=getenv("TB_TOKEN"))
 tg_users = filestools.load_json_file("./src/users.json")
 settings = filestools.load_json_file("./src/settings.json")
 
@@ -33,14 +36,14 @@ def resp_handler(update_info):
         users(tg_users['quelo']['name'], text, chat)
     else:
         logging.warning('Someone strange is trying to connect with the bot.')
-        tb.send_message(
-            'WARNING: Someone strange is trying to connect with the bot.', tg_users['marco']['id'])
-        tb.send_message('Username wrong!', chat)
+        tb.send_message(text='WARNING: Someone strange is trying to connect with the bot.',
+                        chat_id=tg_users['marco']['id'])
+        tb.send_message(text='Username wrong!', chat_id=chat)
 
 
 def admin(user_name, text, chat):
     if text.startswith('/help'):
-        return tb.send_message(HELP_MSG, chat)
+        return tb.send_message(text=HELP_MSG, chat_id=chat)
     elif text.startswith('/startcams'):
         return act.start_cams(tb, chat, user_name, text)
     elif text.startswith('/camstatus'):
@@ -57,11 +60,11 @@ def admin(user_name, text, chat):
         return act.ofuscate(text, tb, chat)
     elif text.startswith('/reboot'):
         act.tenda.reboot()
-        return tb.send_message("Router rebooted", chat)
+        return tb.send_message(text="Router rebooted", chat_id=chat)
     elif text.startswith('/time'):
         return act.get_time(tb, chat)
     else:
-        return tb.send_message('Wrong command!', chat)
+        return tb.send_message(text='Wrong command!', chat_id=chat)
 
 
 def users(user_name, text, chat):
@@ -70,4 +73,4 @@ def users(user_name, text, chat):
                        tg_users['marco']['id'])
     else:
         tb.send_message(
-            f'Envía la palabra "Cams" para habilitar las camaras"', chat)
+            text=f'Envía la palabra "Cams" para habilitar las camaras"', chat_id=chat)

@@ -16,9 +16,10 @@ idna = "==2.9"
 requests = "==2.24.0"
 urllib3 = "==1.25.9"
 reqtry = "<1.0"
-tendawifi = "<1.0"
+tendawifi = "*"
 marcotools = "*"
 python-dotenv = "*"
+python-telegram-bot = "*"
 
 [requires]
 python_version = "3.8"
