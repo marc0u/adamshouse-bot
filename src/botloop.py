@@ -19,10 +19,10 @@ def Bot():
     while True:
         try:
             tb.updates_handler(rh.resp_handler)
-            sleep(2.0)
+            sleep(3.0)
         except Exception as err:
             if error_counter > 3:
                 continue
             logger.exception("Exception occurred")
             tb.send_message(err,  getenv("LOGGER_TB_CHAT_ID"))
-            sleep(2.0)
+            sleep(3.0)

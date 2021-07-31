@@ -18,4 +18,4 @@ logger = init_logger("adamshousebot", getenv("DEBUG"))
 
 if __name__ == "__main__":
     Thread(target=Bot).start()
-    # Thread(target=NetControl).start()
+    Thread(target=NetControl).start()

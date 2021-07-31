@@ -5,9 +5,7 @@ from threading import Timer
 from marcotools import retools
 from time import sleep
 from os import getenv
-from src.utils import parse_ip_range
 from reqtry import get
-from socket import gethostbyname, getfqdn
 
 tenda = TendaAC15(password=getenv("TENDA_PASS"))
 timer_cams = None
@@ -19,9 +17,7 @@ def get_time(tb_obj, chat):
     return tb_obj.send_message(text=now.strftime("%d/%m/%Y - %H:%M:%S"), chat_id=chat)
 
 def get_public_ip(tb_obj, chat):
-    ip_public = get("https://api.ipify.org").text
-    ip_local = gethostbyname(getfqdn())
-    return tb_obj.send_message(text=f"Local: {ip_local}\nPublic: {ip_public}", chat_id=chat)
+    return tb_obj.send_message(text=get("https://api.ipify.org").text, chat_id=chat)
 
 
 def are_cams_alive(tb_obj, chat):
