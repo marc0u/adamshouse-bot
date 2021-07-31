@@ -3,6 +3,7 @@ import re
 from tendawifi import TendaAC15
 from threading import Timer
 from marcotools import retools
+from marcotools.filestools import write_json_file, load_json_file
 from time import sleep
 from os import getenv
 from reqtry import get
@@ -217,3 +218,18 @@ def ofuscate(query, tb_obj=None, chat=None):
             tenda.set_parent_control(dev["deviceId"], 0)
         sleep(interval_sec)
     return tb_obj.send_message(text=f'"{devs_name}" were ofuscated for {how_many} times with intervals of {interval_sec} seconds.', chat_id=chat, disable_notification=True) if chat else None
+
+def backup_ipmac_bind(tb_obj=None, chat=None):
+    ipmac_bind = tenda.get_ipmac_bind()
+    if not ipmac_bind:
+        return tb_obj.send_message(text=f'Somthing wrong getting the ipmac list.', chat_id=chat, disable_notification=True) if chat else None
+    if not write_json_file(ipmac_bind, "ipmac_bind.json"):
+        return tb_obj.send_message(text=f'Somthing wrong saving the file "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
+    return tb_obj.send_message(text=f'Saved in "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
+
+def restore_ipmac_bind(tb_obj=None, chat=None):
+    ipmac_bind = load_json_file("ipmac_bind.json")
+    if not ipmac_bind:
+        return tb_obj.send_message(text=f'Somthing wrong loading the file "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
+    tenda.set_ipmac_bind(ipmac_bind)
+    return tb_obj.send_message(text=f'Restored from "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
