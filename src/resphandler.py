@@ -63,6 +63,8 @@ def admin(user_name, text, chat):
         return tb.send_message(text="Router rebooted", chat_id=chat)
     elif text.startswith('/time'):
         return act.get_time(tb, chat)
+    elif text.startswith('/ip'):
+        return act.get_public_ip(tb, chat)
     else:
         return tb.send_message(text='Wrong command!', chat_id=chat)
 
