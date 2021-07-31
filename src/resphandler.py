@@ -26,7 +26,7 @@ settings = filestools.load_json_file("./src/settings.json")
 
 def resp_handler(update_info):
     text, chat, user = update_info
-    text = text.lower()
+    # text = text.lower()
 
     if user == tg_users['marco']['id']:
         admin(tg_users['marco']['name'], text, chat)
@@ -51,7 +51,7 @@ def admin(user_name, text, chat):
     elif text.startswith('/startvport'):
         return act.start_vport(tb, chat, text)
     elif text.startswith('/net'):
-        return act.set_net_control(text, settings["blacklist"], tb, chat)
+        return act.set_net_control(text, tb, chat)
     elif text.startswith('/addvport'):
         return act.add_vport(tb, chat, text)
     elif text.startswith('/removevport'):

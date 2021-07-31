@@ -135,7 +135,7 @@ def start_vport(tb_obj, chat, query):
 
 def set_net_control(query, tb_obj=None, chat=None):
     res = re.match(
-        r'(/net) (\b\d\d?\d?\d?\b) (\b\d\d?\d?\d?\b)\s?([w|b]-[A-Za-z0-9,_-]+)?\s?(\b\d\d?\d?-\d\d?\d?\b)?', query)
+        r'(/net) (\b\d{1,4}\b) (\b\d{1,4}\b)\s?([w|b]-[A-Za-z0-9,_-]+)?\s?(\b\d{1,3}-\d{1,3}\b)?', query)
     if res == None:
         return tb_obj.send_message(text='Format not recognized. Ex. "/net up_limit:1-9999 down_limit:0-9999 (optional)white|black:w|b-aa,bb,cc ip_range:100-150"', chat_id=chat) if chat else None
     up, down, keywords, ip_range = res[2], res[3], res[4], res[5]
@@ -148,15 +148,16 @@ def set_net_control(query, tb_obj=None, chat=None):
     if not net:
         return tb_obj.send_message(text='Something wrong... It could not get the net control list.', chat_id=chat) if chat else None
     net_controled = [net[0]]
+    devs_name = []
     for client in net[1:]:
         if keywords:
             keyword_list = keywords[2:].split(",")
             if keywords.startswith("b"):
                 for item in keyword_list:
                     if item in client["hostName"]:
-                        print(client["hostName"])
                         client["limitUp"] = up
                         client["limitDown"] = down
+                        devs_name.append(client["hostName"])
                         break
             if keywords.startswith("w"):
                 is_white = False
@@ -164,29 +165,29 @@ def set_net_control(query, tb_obj=None, chat=None):
                     if item in client["hostName"]:
                         is_white = True
                 if not is_white:
-                    print(client["hostName"])
                     client["limitUp"] = up
                     client["limitDown"] = down
+                    devs_name.append(client["hostName"])
         if ip_range:
             ip = retools.all_after("192.168.1.", client["ip"])
             ip = int(ip) if ip else 0
             if ip_from <= ip <= ip_to:
                 client["limitUp"] = up
                 client["limitDown"] = down
+                devs_name.append(client["hostName"])
         if not (keywords or ip_range):
-            print(client["hostName"])
             client["limitUp"] = up
             client["limitDown"] = down
+            devs_name.append(client["hostName"])
         net_controled.append(client)
-    set_net = tenda.set_net_control(net_controled)
-    if not set_net:
+    if not tenda.set_net_control(net_controled):
         return tb_obj.send_message(text='Something wrong... It could not set the net control list.', chat_id=chat) if chat else None
-    return tb_obj.send_message(text='Net control setted successfully.', chat_id=chat) if chat else None
+    return tb_obj.send_message(text=f'Net control setted successfully uplimit: {up}kb/s downlimit: {down}kb/s for: {",".join(devs_name)}', chat_id=chat) if chat else None
 
 
 def ofuscate(query, tb_obj=None, chat=None):
     res = re.match(
-        r'(/ofuscate) (\b\d\d?\d?\d?\b) (\b\d\d?\d?\d?\b)\s?(\b\d\d?\d?-\d\d?\d?\b)?\s?([A-Za-z0-9,_-]+)?', query)
+        r'(/ofuscate) (\b\d{1,4}\b) (\b\d{1,4}\b)\s?(\b\d{1,3}-\d{1,3}\b)?\s?([A-Za-z0-9,_-]+)?', query)
     if res == None:
         return tb_obj.send_message(text='Format not recognized. Ex. "/ofuscate how_many_times:1-9999" interval_sec:1-9999 ?target:someone ?ip_range:100-150', chat_id=chat, disable_notification=True) if chat else None
     how_many, interval_sec, ip_range, target, devs_name, to_ofuscate = int(
@@ -200,8 +201,7 @@ def ofuscate(query, tb_obj=None, chat=None):
     else:
         return tb_obj.send_message(text='target or ip_range are missing. It must exits one of them. Ex. "/ofuscate how_many_times:1-9999" interval_sec:1-9999 ?target:someone ?ip_range:100-150', chat_id=chat, disable_notification=True) if chat else None
     if not to_ofuscate:
-        return tb_obj.send_message(text=f'Anyone match with: {target} or is between {ip_range} ip range.', chat_id=chat, disable_notification=True) if chat else None
-    print(to_ofuscate)
+        return tb_obj.send_message(text=f'Anyone match with: {target}' if target else f'Anyone is between {ip_range} ip range.', chat_id=chat, disable_notification=True) if chat else None
     devs_name = ",".join([item.get("devName", "")
                           for item in to_ofuscate])
     tb_obj.send_message(
