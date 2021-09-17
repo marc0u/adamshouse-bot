@@ -29,13 +29,13 @@ def init_logger(name, debug=""):
         '%(asctime)s - %(name)s - %(funcName)s - %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     formatter_short = logging.Formatter(
         '%(name)s - %(funcName)s - %(levelname)s: %(message)s')
-    # Console Handler
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.CRITICAL if debug !=
-                             "true" else logging.DEBUG)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    if debug != "true":
+    if debug == "true":
+        # Console Handler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+    else:
         # File Handler
         file_handler = RotatingFileHandler(f'{name}.log', mode='a', maxBytes=2*1024*1024,
                                            backupCount=2, encoding=None, delay=0)
@@ -47,5 +47,4 @@ def init_logger(name, debug=""):
         tb_handler.setLevel(logging.ERROR)
         tb_handler.setFormatter(formatter_short)
         logger.addHandler(tb_handler)
-
     return logger
