@@ -1,4 +1,3 @@
-#!/bin/bash
 APPNAME="adamshousebot"
 echo "Removing previous version..."
 docker stop $APPNAME

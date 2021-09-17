@@ -4,9 +4,9 @@
   "dhttpIP": "172.27.175.218",
   "dhcpClientList": [
     {
-      "ipaddr": "192.168.1.190",
-      "macaddr": "d8:e0:e1:3e:54:1c",
-      "devname": "Samsung",
+      "ipaddr": "192.168.1.101",
+      "macaddr": "84:0d:8e:b8:6b:1c",
+      "devname": "ESP_B86B1C",
       "status": "1"
     },
     {
@@ -28,12 +28,6 @@
       "status": "1"
     },
     {
-      "ipaddr": "192.168.1.100",
-      "macaddr": "84:0d:8e:b8:6b:1c",
-      "devname": "ESP_B86B1C",
-      "status": "1"
-    },
-    {
       "ipaddr": "192.168.1.133",
       "macaddr": "dc:4f:22:73:e4:27",
       "devname": "ESP_73E427",
@@ -42,16 +36,10 @@
   ],
   "bindList": [
     {
-      "ipaddr": "192.168.1.29",
-      "macaddr": "d0:81:7a:ab:53:c2",
-      "devname": "M-Macbook",
-      "status": "1"
-    },
-    {
-      "ipaddr": "192.168.1.99",
+      "ipaddr": "192.168.1.100",
       "macaddr": "4c:eb:bd:69:dd:d5",
       "devname": "Isi-Laptop",
-      "status": "0"
+      "status": "1"
     },
     {
       "ipaddr": "192.168.1.28",
@@ -99,13 +87,13 @@
       "ipaddr": "192.168.1.22",
       "macaddr": "b4:56:e3:a5:01:9f",
       "devname": "M-Aiara-iPhone",
-      "status": "0"
+      "status": "1"
     },
     {
       "ipaddr": "192.168.1.61",
       "macaddr": "10:08:c1:a4:cf:22",
       "devname": "Gloria-TV",
-      "status": "0"
+      "status": "1"
     },
     {
       "ipaddr": "192.168.1.25",
@@ -117,12 +105,18 @@
       "ipaddr": "192.168.1.23",
       "macaddr": "ac:e4:b5:a8:ac:6f",
       "devname": "M-Aiara-iPhone2",
-      "status": "0"
+      "status": "1"
     },
     {
       "ipaddr": "192.168.1.62",
       "macaddr": "8c:b8:4a:5d:80:ad",
       "devname": "Quelo-Note10",
+      "status": "1"
+    },
+    {
+      "ipaddr": "192.168.1.29",
+      "macaddr": "d0:81:7a:ab:53:c2",
+      "devname": "M-Macbook",
       "status": "0"
     },
     {
@@ -141,7 +135,7 @@
       "ipaddr": "192.168.1.21",
       "macaddr": "a0:8c:fd:32:01:d6",
       "devname": "M-Laptop-Wired",
-      "status": "0"
+      "status": "1"
     }
   ]
 }
