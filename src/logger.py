@@ -42,9 +42,9 @@ def init_logger(name, debug=""):
         file_handler.setLevel(logging.ERROR)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-        # TelegramBot Handler
-        tb_handler = TelegramBotHandler()
-        tb_handler.setLevel(logging.ERROR)
-        tb_handler.setFormatter(formatter_short)
-        logger.addHandler(tb_handler)
+        # # TelegramBot Handler
+        # tb_handler = TelegramBotHandler()
+        # tb_handler.setLevel(logging.ERROR)
+        # tb_handler.setFormatter(formatter_short)
+        # logger.addHandler(tb_handler)
     return logger

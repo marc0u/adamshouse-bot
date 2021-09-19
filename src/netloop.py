@@ -20,12 +20,10 @@ def NetControl():
             now = datetime.now().time()
             if time(7) <= now <= time(16, 59):
                 act.set_net_control("/net 100 600 100-199")
-            elif time(17) <= now <= time(20, 59):
+            elif time(21) <= now <= time(22, 59):
                 act.set_net_control("/net 50 300 100-199")
-            elif time(21) <= now <= time(22, 29):
+            elif time(23) <= now <= time(23, 59):
                 act.set_net_control("/net 50 150 100-199")
-            elif time(22, 30) <= now <= time(23, 59):
-                act.set_net_control("/net 50 100 100-199")
                 act.ofuscate("/ofuscate 10 10 100-199")
             elif time(0) <= now <= time(0, 59):
                 act.set_net_control("/net 20 50 100-199")
