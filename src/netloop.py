@@ -18,7 +18,7 @@ def NetControl():
     while True:
         try:
             now = datetime.now().time()
-            if time(7) <= now <= time(16, 59):
+            if time(7) <= now <= time(20, 59):
                 act.set_net_control("/net 100 600 100-199")
             elif time(21) <= now <= time(22, 59):
                 act.set_net_control("/net 50 300 100-199")
