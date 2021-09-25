@@ -14,14 +14,18 @@ timer_vport = None
 
 
 def get_time(tb_obj, chat):
+    """/time : Get server time. Yeah"""
     now = datetime.now()
     return tb_obj.send_message(text=now.strftime("%d/%m/%Y - %H:%M:%S"), chat_id=chat)
 
+
 def get_public_ip(tb_obj, chat):
+    """/ip : Get public IP."""
     return tb_obj.send_message(text=get("https://api.ipify.org").text, chat_id=chat)
 
 
 def are_cams_alive(tb_obj, chat):
+    """/camstatus : Get status for each cameras."""
     global timer_cams
     try:
         if timer_cams.isAlive():
@@ -33,6 +37,7 @@ def are_cams_alive(tb_obj, chat):
 
 
 def start_cams(tb_obj, chat, user_name, query, admin_id=None):
+    """/startcams alive_min: 0-9999"""
     res = re.match(
         r'(/startcams) (\b\d\d?\d?\d?\b)', query)
     if res == None:
@@ -66,6 +71,7 @@ def start_cams(tb_obj, chat, user_name, query, admin_id=None):
 
 
 def add_vport(tb_obj, chat, query):
+    """/addvport ip:1-254 inPort:0-65535 outPort:0-65535"""
     res = re.match(
         r'(/addvport) (\b\d\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
     if res == None:
@@ -88,6 +94,7 @@ def add_vport(tb_obj, chat, query):
 
 
 def remove_vport(tb_obj, chat, query):
+    """/removevport ip:1-254 inPort:0-65535 outPort:0-65535"""
     res = re.match(
         r'(/removevport) (\b\d\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b)', query)
     if res == None:
@@ -114,6 +121,7 @@ def remove_vport(tb_obj, chat, query):
 
 
 def start_vport(tb_obj, chat, query):
+    """/startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999"""
     res = re.match(
         r'(/startvport) (\b\d\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\d?\b) (\b\d\d?\d?\d?\b)', query)
     if res == None:
@@ -138,6 +146,7 @@ def start_vport(tb_obj, chat, query):
 
 
 def set_net_control(query, tb_obj=None, chat=None):
+    """/net up_limit:1-9999 down_limit:0-9999 (optional)white|black:w|b-aa,bb,cc ip_range:100-150"""
     res = re.match(
         r'(/net) (\b\d{1,4}\b) (\b\d{1,4}\b)\s?([w|b]-[A-Za-z0-9,_-]+)?\s?(\b\d{1,3}-\d{1,3}\b)?', query)
     if res == None:
@@ -190,10 +199,11 @@ def set_net_control(query, tb_obj=None, chat=None):
 
 
 def ofuscate(query, tb_obj=None, chat=None):
+    """/ofuscate how_many_times:1-9999 interval_sec:1-9999 ?target:someone ?ip_range:100-150"""
     res = re.match(
         r'(/ofuscate) (\b\d{1,4}\b) (\b\d{1,4}\b)\s?(\b\d{1,3}-\d{1,3}\b)?\s?([A-Za-z0-9,_-]+)?', query)
     if res == None:
-        return tb_obj.send_message(text='Format not recognized. Ex. "/ofuscate how_many_times:1-9999" interval_sec:1-9999 ?target:someone ?ip_range:100-150', chat_id=chat, disable_notification=True) if chat else None
+        return tb_obj.send_message(text='Format not recognized. Ex. "/ofuscate how_many_times:1-9999 interval_sec:1-9999 ?target:someone ?ip_range:100-150"', chat_id=chat, disable_notification=True) if chat else None
     how_many, interval_sec, ip_range, target, devs_name, to_ofuscate = int(
         res[2]), int(res[3]), res[4], res[5], [], []
     if ip_range:
@@ -219,7 +229,9 @@ def ofuscate(query, tb_obj=None, chat=None):
         sleep(interval_sec)
     return tb_obj.send_message(text=f'"{devs_name}" were ofuscated for {how_many} times with intervals of {interval_sec} seconds.', chat_id=chat, disable_notification=True) if chat else None
 
+
 def backup_ipmac_bind(tb_obj=None, chat=None):
+    """/backup : Backup ipmac bind list."""
     ipmac_bind = tenda.get_ipmac_bind()
     if not ipmac_bind:
         return tb_obj.send_message(text=f'Somthing wrong getting the ipmac list.', chat_id=chat, disable_notification=True) if chat else None
@@ -227,9 +239,21 @@ def backup_ipmac_bind(tb_obj=None, chat=None):
         return tb_obj.send_message(text=f'Somthing wrong saving the file "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
     return tb_obj.send_message(text=f'Saved in "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
 
+
 def restore_ipmac_bind(tb_obj=None, chat=None):
+    """/restore : Restore ipmac bind list."""
     ipmac_bind = load_json_file("ipmac_bind.json")
     if not ipmac_bind:
         return tb_obj.send_message(text=f'Somthing wrong loading the file "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
     tenda.set_ipmac_bind(ipmac_bind)
     return tb_obj.send_message(text=f'Restored from "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
+
+
+def help(tb_obj, chat):
+    msg = []
+    with open('src/actions.py', "r") as f:
+        for line in f:
+            if '"""/' in line:
+                msg.append(line.replace('"""', "")[4:])
+    msg = "".join(msg[:-1])
+    return tb_obj.send_message(text=msg, chat_id=chat, disable_notification=True) if chat else None

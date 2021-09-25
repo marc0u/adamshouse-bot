@@ -6,18 +6,6 @@ from marcotools import telegrambot
 from marcotools import filestools
 import src.actions as act
 
-
-HELP_MSG = """/time : Get server time.
-/startcams alive_min:0-9999
-/camstatus : Get status for each cameras.
-/startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999
-/net up_limit:1-9999 down_limit:0-9999
-/addvport ip:1-254 inPort:0-65535 outPort:0-65535
-/removevport ip:1-254 inPort:0-65535 outPort:0-65535
-/ofuscate someone how_many:1-9999" interval_sec:1-9999
-/reboot : Reboot router
-"""
-
 # tb = telegrambot.tb(getenv("TB_TOKEN"))
 tb = telegram.Bot(token=getenv("TB_TOKEN"))
 tg_users = filestools.load_json_file("./src/users.json")
@@ -43,7 +31,7 @@ def resp_handler(update_info):
 
 def admin(user_name, text, chat):
     if text.startswith('/help'):
-        return tb.send_message(text=HELP_MSG, chat_id=chat)
+        return act.help(tb, chat)
     elif text.startswith('/startcams'):
         return act.start_cams(tb, chat, user_name, text)
     elif text.startswith('/camstatus'):
@@ -58,9 +46,9 @@ def admin(user_name, text, chat):
         return act.remove_vport(tb, chat, text)
     elif text.startswith('/ofuscate'):
         return act.ofuscate(text, tb, chat)
-    elif text.startswith('/reboot'):
-        act.tenda.reboot()
-        return tb.send_message(text="Router rebooted", chat_id=chat)
+    # elif text.startswith('/reboot'):
+    #     act.tenda.reboot()
+    #     return tb.send_message(text="Router rebooted", chat_id=chat)
     elif text.startswith('/time'):
         return act.get_time(tb, chat)
     elif text.startswith('/ip'):
