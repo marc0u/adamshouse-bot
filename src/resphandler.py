@@ -57,6 +57,8 @@ def admin(user_name, text, chat):
         return act.backup_ipmac_bind(tb, chat)
     elif text.startswith('/restore'):
         return act.restore_ipmac_bind(tb, chat)
+    elif text.startswith('/online'):
+        return act.get_online_clients(tb, chat)
     else:
         return tb.send_message(text='Wrong command!', chat_id=chat)
 

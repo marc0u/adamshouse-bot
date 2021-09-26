@@ -14,7 +14,7 @@ timer_vport = None
 
 
 def get_time(tb_obj, chat):
-    """/time : Get server time. Yeah"""
+    """/time : Get server time."""
     now = datetime.now()
     return tb_obj.send_message(text=now.strftime("%d/%m/%Y - %H:%M:%S"), chat_id=chat)
 
@@ -247,6 +247,17 @@ def restore_ipmac_bind(tb_obj=None, chat=None):
         return tb_obj.send_message(text=f'Somthing wrong loading the file "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
     tenda.set_ipmac_bind(ipmac_bind)
     return tb_obj.send_message(text=f'Restored from "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
+
+
+def get_online_clients(tb_obj, chat):
+    """/online : Get clients online."""
+    online_list = tenda.get_online_list()
+    online_list = sorted(
+        online_list, key=lambda k: int(k['ip'].split(".")[-1]))
+    msg = ""
+    for client in online_list:
+        msg += client["devName"] + " " + client["ip"] + "\n"
+    return tb_obj.send_message(text=msg, chat_id=chat, disable_notification=True)
 
 
 def help(tb_obj, chat):
