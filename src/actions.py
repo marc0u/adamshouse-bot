@@ -8,22 +8,27 @@ from time import sleep
 from os import getenv
 from reqtry import get
 
+from src.utils import with_err_resp
+
 tenda = TendaAC15(password=getenv("TENDA_PASS"))
 timer_cams = None
 timer_vport = None
 
 
+@with_err_resp
 def get_time(tb_obj, chat):
     """/time : Get server time."""
     now = datetime.now()
     return tb_obj.send_message(text=now.strftime("%d/%m/%Y - %H:%M:%S"), chat_id=chat)
 
 
+@with_err_resp
 def get_public_ip(tb_obj, chat):
     """/ip : Get public IP."""
     return tb_obj.send_message(text=get("https://api.ipify.org").text, chat_id=chat)
 
 
+@with_err_resp
 def are_cams_alive(tb_obj, chat):
     """/camstatus : Get status for each cameras."""
     global timer_cams
@@ -36,6 +41,7 @@ def are_cams_alive(tb_obj, chat):
         return tb_obj.send_message(text='Disable', chat_id=chat)
 
 
+@with_err_resp
 def start_cams(tb_obj, chat, user_name, query, admin_id=None):
     """/startcams alive_min: 0-9999"""
     res = re.match(
@@ -70,6 +76,7 @@ def start_cams(tb_obj, chat, user_name, query, admin_id=None):
     return tb_obj.send_message(text=f'Cams are enable for {alive_min} minutes.', chat_id=chat)
 
 
+@with_err_resp
 def add_vport(tb_obj, chat, query):
     """/addvport ip:1-254 inPort:0-65535 outPort:0-65535"""
     res = re.match(
@@ -93,6 +100,7 @@ def add_vport(tb_obj, chat, query):
     return set_vport
 
 
+@with_err_resp
 def remove_vport(tb_obj, chat, query):
     """/removevport ip:1-254 inPort:0-65535 outPort:0-65535"""
     res = re.match(
@@ -120,6 +128,7 @@ def remove_vport(tb_obj, chat, query):
     return set_vport
 
 
+@with_err_resp
 def start_vport(tb_obj, chat, query):
     """/startvport ip:1-254 inPort:0-65535 outPort:0-65535 aliveMin:1-9999"""
     res = re.match(
@@ -145,7 +154,8 @@ def start_vport(tb_obj, chat, query):
     return tb_obj.send_message(text=f'Vport is enable for {alive_min} minutes.', chat_id=chat)
 
 
-def set_net_control(query, tb_obj=None, chat=None):
+@with_err_resp
+def set_net_control(tb_obj=None, chat=None, query=""):
     """/net up_limit:1-9999 down_limit:0-9999 (optional)white|black:w|b-aa,bb,cc ip_range:100-150"""
     res = re.match(
         r'(/net) (\b\d{1,4}\b) (\b\d{1,4}\b)\s?([w|b]-[A-Za-z0-9,_-]+)?\s?(\b\d{1,3}-\d{1,3}\b)?', query)
@@ -195,10 +205,11 @@ def set_net_control(query, tb_obj=None, chat=None):
         net_controled.append(client)
     if not tenda.set_net_control(net_controled):
         return tb_obj.send_message(text='Something wrong... It could not set the net control list.', chat_id=chat) if chat else None
-    return tb_obj.send_message(text=f'Net control setted successfully uplimit: {up}kb/s downlimit: {down}kb/s for: {",".join(devs_name)}', chat_id=chat) if chat else None
+    return tb_obj.send_message(text=f'Net control setted successfully uplimit: {up}kb/s downlimit: {down}kb/s for:' + "\n" + "\n".join(devs_name), chat_id=chat) if chat else None
 
 
-def ofuscate(query, tb_obj=None, chat=None):
+@with_err_resp
+def ofuscate(tb_obj=None, chat=None, query=""):
     """/ofuscate how_many_times:1-9999 interval_sec:1-9999 ?target:someone ?ip_range:100-150"""
     res = re.match(
         r'(/ofuscate) (\b\d{1,4}\b) (\b\d{1,4}\b)\s?(\b\d{1,3}-\d{1,3}\b)?\s?([A-Za-z0-9,_-]+)?', query)
@@ -230,6 +241,7 @@ def ofuscate(query, tb_obj=None, chat=None):
     return tb_obj.send_message(text=f'"{devs_name}" were ofuscated for {how_many} times with intervals of {interval_sec} seconds.', chat_id=chat, disable_notification=True) if chat else None
 
 
+@with_err_resp
 def backup_ipmac_bind(tb_obj=None, chat=None):
     """/backup : Backup ipmac bind list."""
     ipmac_bind = tenda.get_ipmac_bind()
@@ -240,6 +252,7 @@ def backup_ipmac_bind(tb_obj=None, chat=None):
     return tb_obj.send_message(text=f'Saved in "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
 
 
+@with_err_resp
 def restore_ipmac_bind(tb_obj=None, chat=None):
     """/restore : Restore ipmac bind list."""
     ipmac_bind = load_json_file("ipmac_bind.json")
@@ -249,6 +262,7 @@ def restore_ipmac_bind(tb_obj=None, chat=None):
     return tb_obj.send_message(text=f'Restored from "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
 
 
+@with_err_resp
 def get_online_clients(tb_obj, chat):
     """/online : Get clients online."""
     online_list = tenda.get_online_list()
@@ -260,6 +274,7 @@ def get_online_clients(tb_obj, chat):
     return tb_obj.send_message(text=msg, chat_id=chat, disable_notification=True)
 
 
+@with_err_resp
 def help(tb_obj, chat):
     msg = []
     with open('src/actions.py', "r") as f:

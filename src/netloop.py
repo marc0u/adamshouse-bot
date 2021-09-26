@@ -19,18 +19,18 @@ def NetControl():
         try:
             now = datetime.now().time()
             if time(7) <= now <= time(20, 59):
-                act.set_net_control("/net 100 600 100-199")
+                act.set_net_control(None, None, "/net 100 600 100-199")
             elif time(21) <= now <= time(22, 59):
-                act.set_net_control("/net 50 300 100-199")
+                act.set_net_control(None, None, "/net 50 300 100-199")
             elif time(23) <= now <= time(23, 59):
-                act.set_net_control("/net 50 150 100-199")
-                act.ofuscate("/ofuscate 10 10 100-199")
+                act.set_net_control(None, None, "/net 50 150 100-199")
+                act.ofuscate(None, None, "/ofuscate 10 10 100-199")
             elif time(0) <= now <= time(0, 59):
-                act.set_net_control("/net 20 50 100-199")
-                act.ofuscate("/ofuscate 10 10 100-199")
+                act.set_net_control(None, None, "/net 20 50 100-199")
+                act.ofuscate(None, None, "/ofuscate 10 10 100-199")
             elif time(1) <= now <= time(6, 59):
-                act.set_net_control("/net 10 30 100-199")
-                act.ofuscate("/ofuscate 10 10 100-199")
+                act.set_net_control(None, None, "/net 10 30 100-199")
+                act.ofuscate(None, None, "/ofuscate 10 10 100-199")
             error_counter = 0
             warn_counter = 0
             sleep(uniform(5.0, 10.0)*60)

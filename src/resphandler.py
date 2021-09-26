@@ -39,13 +39,13 @@ def admin(user_name, text, chat):
     elif text.startswith('/startvport'):
         return act.start_vport(tb, chat, text)
     elif text.startswith('/net'):
-        return act.set_net_control(text, tb, chat)
+        return act.set_net_control(tb, chat, text)
     elif text.startswith('/addvport'):
         return act.add_vport(tb, chat, text)
     elif text.startswith('/removevport'):
         return act.remove_vport(tb, chat, text)
     elif text.startswith('/ofuscate'):
-        return act.ofuscate(text, tb, chat)
+        return act.ofuscate(tb, chat, text)
     # elif text.startswith('/reboot'):
     #     act.tenda.reboot()
     #     return tb.send_message(text="Router rebooted", chat_id=chat)
