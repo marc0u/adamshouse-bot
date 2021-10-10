@@ -277,7 +277,7 @@ def get_online_clients(tb_obj, chat):
 
 @with_err_resp
 def router_setup(tb_obj, chat):
-    """/setuprouter : Get clients online."""
+    """/setuprouter : Set up Router."""
     ts.setup_internet()
     ts.setup_router()
     ts.setup_securities()
