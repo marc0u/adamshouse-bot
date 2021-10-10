@@ -7,6 +7,7 @@ from marcotools.filestools import write_json_file, load_json_file
 from time import sleep
 from os import getenv
 from reqtry import get
+import src.tendasetup as ts
 
 from src.utils import with_err_resp
 
@@ -272,6 +273,15 @@ def get_online_clients(tb_obj, chat):
     for client in online_list:
         msg += client["devName"] + " " + client["ip"] + "\n"
     return tb_obj.send_message(text=msg, chat_id=chat, disable_notification=True)
+
+
+@with_err_resp
+def router_setup(tb_obj, chat):
+    """/setuprouter : Get clients online."""
+    ts.setup_internet()
+    ts.setup_router()
+    ts.setup_securities()
+    return tb_obj.send_message(text="Router successfully setted up.", chat_id=chat, disable_notification=True)
 
 
 @with_err_resp
