@@ -210,6 +210,21 @@ def set_net_control(tb_obj=None, chat=None, query=""):
 
 
 @with_err_resp
+def get_net_control(tb_obj=None, chat=None):
+    """/netcontrol : Get a list with net control settings by dev name."""
+    net_control = tenda.get_net_control()
+    net_control = [item for item in net_control[1:] if item["ip"] != ""]
+    net_control = sorted(
+        net_control, key=lambda k: int(k['ip'].split(".")[-1]))
+    msg = ""
+    for client in net_control[1:]:
+        if client["isControled"] != '0':
+            msg += client["hostName"] + " U:" + client["limitUp"] + \
+                " D:" + client["limitDown"] + " kb/s" + "\n"
+    return tb_obj.send_message(text=msg, chat_id=chat, disable_notification=True)
+
+
+@with_err_resp
 def ofuscate(tb_obj=None, chat=None, query=""):
     """/ofuscate how_many_times:1-9999 interval_sec:1-9999 ?target:someone ?ip_range:100-150"""
     res = re.match(

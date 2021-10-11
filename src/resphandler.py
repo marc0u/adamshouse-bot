@@ -38,6 +38,8 @@ def admin(user_name, text, chat):
         return act.are_cams_alive(tb, chat)
     elif text.startswith('/startvport'):
         return act.start_vport(tb, chat, text)
+    elif text.startswith('/netcontrol'):
+        return act.get_net_control(tb, chat)
     elif text.startswith('/net'):
         return act.set_net_control(tb, chat, text)
     elif text.startswith('/addvport'):
