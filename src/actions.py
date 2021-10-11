@@ -257,8 +257,7 @@ def backup_ipmac_bind(tb_obj=None, chat=None):
 def restore_ipmac_bind(tb_obj=None, chat=None):
     """/restore : Restore ipmac bind list."""
     ipmac_bind = load_json_file("ipmac_bind.json")
-    if not ipmac_bind:
-        return tb_obj.send_message(text=f'Somthing wrong loading the file "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
+    assert ipmac_bind, 'Somthing wrong loading the file "ipmac_bind.json".'
     tenda.set_ipmac_bind(ipmac_bind)
     return tb_obj.send_message(text=f'Restored from "ipmac_bind.json".', chat_id=chat, disable_notification=True) if chat else None
 
@@ -276,11 +275,10 @@ def get_online_clients(tb_obj, chat):
 
 
 @with_err_resp
-def router_setup(tb_obj, chat):
+def setup_router(tb_obj, chat):
     """/setuprouter : Set up Router."""
-    ts.setup_internet()
     ts.setup_router()
-    ts.setup_securities()
+    ts.restore_ipmac_bind()
     return tb_obj.send_message(text="Router successfully setted up.", chat_id=chat, disable_notification=True)
 
 

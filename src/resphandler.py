@@ -46,9 +46,9 @@ def admin(user_name, text, chat):
         return act.remove_vport(tb, chat, text)
     elif text.startswith('/ofuscate'):
         return act.ofuscate(tb, chat, text)
-    # elif text.startswith('/reboot'):
-    #     act.tenda.reboot()
-    #     return tb.send_message(text="Router rebooted", chat_id=chat)
+    elif text.startswith('/reboot'):
+        act.tenda.reboot()
+        return tb.send_message(text="Router rebooted", chat_id=chat)
     elif text.startswith('/time'):
         return act.get_time(tb, chat)
     elif text.startswith('/ip'):
@@ -60,7 +60,7 @@ def admin(user_name, text, chat):
     elif text.startswith('/online'):
         return act.get_online_clients(tb, chat)
     elif text.startswith('/setuprouter'):
-        return act.router_setup(tb, chat)
+        return act.setup_router(tb, chat)
     else:
         return tb.send_message(text='Wrong command!', chat_id=chat)
 
