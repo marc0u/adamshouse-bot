@@ -6,10 +6,13 @@ tenda = TendaAC15(password=getenv("TENDA_PASS"))
 
 
 def setup_router():
-    assert '"errCode":0' in tenda.set_fast_router(getenv("TENDA_SSID"), getenv(
-        "TENDA_WIFI_PASS"), getenv("TENDA_PASS")), "Could not setup router."
-    assert '"errCode":0' in tenda.set_fast_internet(
-        getenv("TENDA_MAC")), "Could not setup internet."
+    tenda.set_fast_internet(getenv("TENDA_MAC"))
+    tenda.set_fast_router(getenv("TENDA_SSID"), getenv(
+        "TENDA_WIFI_PASS"), getenv("TENDA_PASS"))
+
+
+def setup_wifi():
+    tenda.setup_wifi(getenv("TENDA_SSID"), getenv("TENDA_WIFI_PASS"))
     tenda.set_autoreboot_status(0)
     tenda.set_wps_status(0)
 

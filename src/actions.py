@@ -293,6 +293,7 @@ def get_online_clients(tb_obj, chat):
 def setup_router(tb_obj, chat):
     """/setuprouter : Set up Router."""
     ts.setup_router()
+    ts.setup_wifi()
     ts.restore_ipmac_bind()
     return tb_obj.send_message(text="Router successfully setted up.", chat_id=chat, disable_notification=True)
 
