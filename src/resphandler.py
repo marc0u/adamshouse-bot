@@ -63,14 +63,18 @@ def admin(user_name, text, chat):
         return act.get_online_clients(tb, chat)
     elif text.startswith('/setuprouter'):
         return act.setup_router(tb, chat)
+    elif text.startswith('/setuprouter2'):
+        return act.setup_router2(tb, chat)
     else:
         return tb.send_message(text='Wrong command!', chat_id=chat)
 
 
 def users(user_name, text, chat):
-    if text == 'cams':
+    if 'cams' in text.lower():
         act.start_cams(tb, chat, user_name, "/startcams 10",
                        tg_users['marco']['id'])
+    elif 'wifi' in text.lower():
+        return act.setup_router(tb, chat)
     else:
         tb.send_message(
             text=f'Envía la palabra "Cams" para habilitar las camaras"', chat_id=chat)

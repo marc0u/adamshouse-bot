@@ -299,6 +299,15 @@ def setup_router(tb_obj, chat):
 
 
 @with_err_resp
+def setup_router2(tb_obj, chat):
+    """/setuprouter2 : Set up Router."""
+    ts.restore_ipmac_bind()
+    ts.setup_router()
+    ts.setup_wifi()
+    return tb_obj.send_message(text="Router successfully setted up.", chat_id=chat, disable_notification=True)
+
+
+@with_err_resp
 def help(tb_obj, chat):
     msg = []
     with open('src/actions.py', "r") as f:
