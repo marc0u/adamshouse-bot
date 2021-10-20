@@ -2,20 +2,7 @@
   "lanIp": "192.168.1.1",
   "lanMask": "255.255.255.0",
   "dhttpIP": "172.27.175.218",
-  "dhcpClientList": [
-    {
-      "ipaddr": "192.168.1.118",
-      "macaddr": "86:b4:f5:d3:1a:63",
-      "devname": "Tablet-isi",
-      "status": "1"
-    },
-    {
-      "ipaddr": "192.168.1.145",
-      "macaddr": "e6:f1:1e:36:ec:b8",
-      "devname": "gloria-tablet??",
-      "status": "1"
-    }
-  ],
+  "dhcpClientList": [],
   "bindList": [
     {
       "ipaddr": "192.168.1.64",
@@ -27,7 +14,7 @@
       "ipaddr": "192.168.1.99",
       "macaddr": "d8:e0:e1:3e:54:1c",
       "devname": "Living-TV",
-      "status": "1"
+      "status": "0"
     },
     {
       "ipaddr": "192.168.1.36",
@@ -75,7 +62,7 @@
       "ipaddr": "192.168.1.15",
       "macaddr": "74:46:a0:cb:1c:12",
       "devname": "S-Rancher",
-      "status": "1"
+      "status": "0"
     },
     {
       "ipaddr": "192.168.1.20",
