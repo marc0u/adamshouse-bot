@@ -291,20 +291,13 @@ def get_online_clients(tb_obj, chat):
 
 @with_err_resp
 def setup_router(tb_obj, chat):
-    """/setuprouter : Set up Router."""
-    ts.setup_router()
-    ts.setup_wifi()
-    ts.restore_ipmac_bind()
-    return tb_obj.send_message(text="Router successfully setted up.", chat_id=chat, disable_notification=True)
-
-
-@with_err_resp
-def setup_router2(tb_obj, chat):
     """/setuprouter2 : Set up Router."""
     ts.restore_ipmac_bind()
     ts.setup_router()
     ts.setup_wifi()
-    return tb_obj.send_message(text="Router successfully setted up.", chat_id=chat, disable_notification=True)
+    set_net_control(None, None, "/net 1200 1200 4-199")
+    if tb_obj and chat:
+        return tb_obj.send_message(text="Router successfully setted up.", chat_id=chat, disable_notification=True)
 
 
 @with_err_resp
@@ -316,3 +309,9 @@ def help(tb_obj, chat):
                 msg.append(line.replace('"""', "")[4:])
     msg = "".join(msg[:-1])
     return tb_obj.send_message(text=msg, chat_id=chat, disable_notification=True) if chat else None
+
+
+def verify_router():
+    status = tenda.get_router_status()
+    if status["wl5gName"] != "Lajudini":
+        setup_router(None, None)

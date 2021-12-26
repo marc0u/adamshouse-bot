@@ -31,6 +31,7 @@ def NetControl():
                 act.ofuscate(None, None, "/ofuscate 10 10 100-199")
             error_counter = 0
             warn_counter = 0
+            act.verify_router()
             sleep(uniform(10.0, 15.0)*60)
         except (AssertionError, req_exceptions.ConnectTimeout, req_exceptions.ConnectionError, req_exceptions.HTTPError, req_exceptions.ReadTimeout, req_exceptions.Timeout) as e:
             warn_counter += 1
